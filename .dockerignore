@@ -1,0 +1,12 @@
+.venv
+.git
+data/cache
+__pycache__
+*.pyc
+.env
+*.ogg
+*.wav
+*.mp3
+validation_results.json
+predictions*.json
+predictions*.csv

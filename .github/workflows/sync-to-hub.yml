@@ -1,0 +1,67 @@
+name: Sync to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Configure in the GitHub repo (Settings -> Secrets and variables -> Actions):
+#   Variables: HF_USER, HF_SPACE (optional, defaults to voice-tone-analyzer)
+#   Secrets:   HF_TOKEN (write-scoped)
+# Kept out of the file so a fork pushes to its own Space, not someone else's.
+env:
+  HF_USER: ${{ vars.HF_USER }}
+  HF_SPACE: ${{ vars.HF_SPACE || 'voice-tone-analyzer' }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Spaces rejects shallow pushes -- full history is required.
+          fetch-depth: 0
+          lfs: true
+
+      - name: Check configuration
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          fail=0
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::HF_TOKEN repo secret is not set (needs write scope)."
+            fail=1
+          fi
+          if [ -z "$HF_USER" ]; then
+            echo "::error::HF_USER repo variable is not set. Add it under Settings -> Secrets and variables -> Actions -> Variables."
+            fail=1
+          fi
+          exit $fail
+
+      - name: Guard against publishing confidential or licensed data
+        # The Space is public: call audio is confidential and validation
+        # artifacts embed licensed IEMOCAP transcripts. Enforced in CI so a
+        # gitignore edit can't silently undo it.
+        run: |
+          leaked=$(git ls-files -- \
+            'data/cache/**' \
+            'validation_results*.json' \
+            '*.log' \
+            'iter_*.json' \
+            'predictions*.json' \
+            '.env' \
+            '*.ogg' '*.wav' '*.mp3' '*.m4a' '*.opus' '*.flac')
+          if [ -n "$leaked" ]; then
+            echo "::error::Refusing to publish. These are tracked but must not reach a public Space:"
+            echo "$leaked"
+            exit 1
+          fi
+          echo "No confidential or licensed files tracked."
+
+      - name: Push to Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git push --force \
+            "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE}" \
+            HEAD:main

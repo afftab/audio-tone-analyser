@@ -1,0 +1,32 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets
+.env
+
+# Uploaded call audio and model caches. Production-call audio is confidential
+# (brief §5) and must never enter the repository, which is force-pushed to a
+# public Hugging Face Space by .github/workflows/sync-to-hub.yml.
+data/cache/
+
+# Validation run artifacts. These embed verbatim IEMOCAP reference
+# transcripts (`ref_transcript` per sample) and full sweep logs. IEMOCAP is
+# distributed under a restrictive USC licence that does not permit
+# redistribution, so publishing these to a public Space would be a licence
+# breach as well as noise. The numbers that matter are quoted in
+# TECHNICAL_MEMO.md; the raw runs stay local.
+validation_results*.json
+iter_*.json
+predictions*.json
+stage_timings.json
+*.log
+ablation_context/
+ablation_override/

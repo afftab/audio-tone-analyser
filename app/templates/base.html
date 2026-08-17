@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}Voice Tone Analyzer{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css?v={{ static_version('app.css') }}">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <span class="topbar__brand">
+      <span class="topbar__mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      <a href="/">Voice Tone Analyzer</a>
+    </span>
+    <nav>{% block nav %}<a href="/logout">Log out</a>{% endblock %}</nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="appfoot">
+    parakeet-tdt-0.6b-v2 &middot; emotion2vec+ large &middot; PANNs CNN14 &middot; pyannote segmentation-3.0 &middot; gpt-5.6-luna &middot; $0.003/min ceiling
+  </footer>
+</div>
+</body>
+</html>

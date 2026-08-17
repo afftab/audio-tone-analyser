@@ -1,0 +1,49 @@
+{
+  "method": "diverse IEMOCAP M+F speaker pairs (replaces similar call-center summation)",
+  "n_samples": 65,
+  "accuracy": 0.8,
+  "macro_f1": 0.7902705385951849,
+  "confusion_matrix": {
+    "labels": [
+      "false",
+      "true"
+    ],
+    "matrix": [
+      [
+        33,
+        2
+      ],
+      [
+        11,
+        19
+      ]
+    ]
+  },
+  "report": {
+    "false": {
+      "precision": 0.75,
+      "recall": 0.9428571428571428,
+      "f1-score": 0.8354430379746836,
+      "support": 35.0
+    },
+    "true": {
+      "precision": 0.9047619047619048,
+      "recall": 0.6333333333333333,
+      "f1-score": 0.7450980392156863,
+      "support": 30.0
+    },
+    "accuracy": 0.8,
+    "macro avg": {
+      "precision": 0.8273809523809523,
+      "recall": 0.7880952380952381,
+      "f1-score": 0.7902705385951849,
+      "support": 65.0
+    },
+    "weighted avg": {
+      "precision": 0.8214285714285714,
+      "recall": 0.8,
+      "f1-score": 0.7937453462397617,
+      "support": 65.0
+    }
+  }
+}

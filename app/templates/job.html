@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{% block title %}Batch {{ job_id }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>Batch</h1>
+  <span class="pagehead__id">{{ job_id }}</span>
+  <span class="pagehead__spacer"></span>
+  <span class="btn-row" id="dl" hidden>
+    <a class="btn btn--sm" href="/jobs/{{ job_id }}/download.csv">Download CSV</a>
+    <a class="btn btn--sm" href="/jobs/{{ job_id }}/download.json">Download JSON</a>
+  </span>
+</div>
+
+<div id="val-errors"></div>
+
+<div class="card runbar" role="status" aria-live="polite" aria-atomic="true">
+  <span class="runbar__label" id="pt">Preparing…</span>
+  <div class="progress__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ptrack">
+    <div class="progress__bar" id="pfill"></div>
+  </div>
+  <span class="runbar__pct" id="ppct">0%</span>
+</div>
+
+<div id="kpis" class="card stats" hidden></div>
+
+<div id="panels" class="panel-grid" hidden>
+  <div class="card panel">
+    <div class="panel__head"><h2>Field distributions</h2><span class="hint" id="dist-hint"></span></div>
+    <div class="panel-stack" id="dist-body"></div>
+  </div>
+  <div class="card panel">
+    <div class="panel__head"><h2>Pipeline cost &amp; time</h2><span class="hint">completed clips</span></div>
+    <div class="panel-stack" id="pipeline-body"></div>
+  </div>
+</div>
+
+<div id="panel-accuracy" class="card panel" hidden>
+  <div class="panel__head"><h2>Accuracy vs. manifest</h2><span class="hint">exact match against uploaded <code>result_json</code></span></div>
+  <div id="acc-body"></div>
+</div>
+
+<div class="card tablecard">
+  <div class="toolbar">
+    <div class="tabs" id="tabs"></div>
+    <div class="toolbar__spacer"></div>
+    <label class="search">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M11.5 11.5 15 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="q" placeholder="Search filename" autocomplete="off">
+    </label>
+  </div>
+  <div class="table-wrap">
+  <table class="results">
+    <thead>
+      <tr>
+        <th rowspan="2">File</th>
+        <th rowspan="2">Status</th>
+        <th colspan="2">Emotion</th>
+        <th colspan="3">Background</th>
+        <th colspan="3">Technical</th>
+        <th colspan="3" class="num">Metrics</th>
+      </tr>
+      <tr>
+        <th class="sortable" data-key="tone" tabindex="0" role="button">Tone<span class="arrow"></span></th>
+        <th class="sortable" data-key="intensity" tabindex="0" role="button">Intensity<span class="arrow"></span></th>
+        <th class="mid">Noise</th><th>Type</th>
+        <th class="col-sev sortable" data-key="severity" tabindex="0" role="button">Severity<span class="arrow"></span></th>
+        <th class="sortable" data-key="quality" tabindex="0" role="button">Quality<span class="arrow"></span></th>
+        <th class="mid">Overlap</th><th class="mid col-sil">Silence</th>
+        <th class="num col-conf sortable" data-key="conf" tabindex="0" role="button">Conf<span class="arrow"></span></th>
+        <th class="num sortable" data-key="time" tabindex="0" role="button">Time<span class="arrow"></span></th>
+        <th class="num col-cost sortable" data-key="cost" tabindex="0" role="button">Cost<span class="arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody id="tb">
+      <tr><td colspan="13"><span class="skel skel--w100"></span></td></tr>
+      <tr><td colspan="13"><span class="skel skel--w100"></span></td></tr>
+      <tr><td colspan="13"><span class="skel skel--w100"></span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="tablefoot">
+    <span>Show</span>
+    <select id="pagesize">
+      <option value="10">10</option>
+      <option value="25">25</option>
+      <option value="50">50</option>
+      <option value="0">All</option>
+    </select>
+    <span>per page</span>
+    <span class="pager">
+      <button id="pgPrev" aria-label="Previous page">‹</button>
+      <span class="pager__pos" id="pgPos">1 / 1</span>
+      <button id="pgNext" aria-label="Next page">›</button>
+    </span>
+  </div>
+</div>
+
+<p><a href="/">&larr; New batch</a></p>
+
+<script>
+var jobId = {{ job_id | tojson }};
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+function sk(w) { return '<span class="skel skel--' + w + '"></span>'; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+var INTENSITY = ['low', 'medium', 'high'];
+var SEVERITY  = ['none', 'low', 'medium', 'high'];
+var QUALITY   = ['clear', 'slightly_impaired', 'severely_impaired'];
+var TONES     = ['neutral', 'satisfied', 'frustrated', 'upset', 'distressed'];
+
+/* Chart colours only (see app.css). Negatives are one escalating red so
+   escalation reads as darker, not as a fifth hue. */
+var TONE_COLOR = {
+  neutral: 'var(--n5)', satisfied: 'var(--accent)',
+  frustrated: '#f87171', upset: 'var(--chart-2)', distressed: '#7f1d1d'
+};
+var SEVERITY_COLOR = { none: 'var(--n4)', low: 'var(--chart-0)', medium: 'var(--chart-1)', high: 'var(--chart-2)' };
+var QUALITY_COLOR  = { clear: 'var(--chart-0)', slightly_impaired: 'var(--chart-1)', severely_impaired: 'var(--chart-2)' };
+/* Categorical (no order): one colour at descending opacity instead of a
+   rainbow. Segments stay distinguishable by position and label. */
+var CATPALETTE = [1, .84, .7, .58, .48, .4, .33, .28, .24, .2]
+  .map(function (a) { return 'rgba(37,99,235,' + a + ')'; });
+
+/* Ordinals as filled segments; the word stays alongside as a second
+   encoding, not a replacement. */
+function meter(value, scale) {
+  var i = scale.indexOf(value);
+  if (i < 0) return '';
+  var bars = '';
+  for (var b = 0; b < scale.length - 1; b++) {
+    bars += '<i class="' + (b < i ? 'on' : '') + '"></i>';
+  }
+  return '<span class="meter' + (i === 0 ? ' meter--none' : '') + '">' +
+         '<span class="meter__bars" aria-hidden="true">' + bars + '</span>' +
+         '<span class="meter__label">' + esc(value) + '</span></span>';
+}
+
+/* `flag` marks the readings a reviewer would actually stop on. */
+function chip(value, flag) {
+  if (value == null || value === '') return '<span class="chip is-muted">—</span>';
+  return '<span class="chip' + (flag ? ' is-flag' : '') + '" title="' + esc(value) + '">' +
+         esc(value) + '</span>';
+}
+function bool(v) {
+  return '<span class="bool bool--' + (v === true ? 't' : 'f') + '" role="img" aria-label="' +
+         (v === true ? 'yes' : 'no') + '"></span>';
+}
+function conf(v) {
+  if (v == null) return '';
+  return '<span class="conf"><span class="conf__track">' +
+         '<span class="conf__fill" style="width:' + Math.round(v * 100) + '%"></span></span>' +
+         '<span class="conf__v">' + Number(v).toFixed(2) + '</span></span>';
+}
+function secs(v) {
+  if (v == null) return '';
+  return '<span class="mono">' + Number(v).toFixed(1) + '</span><span class="unit">s</span>';
+}
+function num(v, digits, prefix) {
+  if (v == null) return '';
+  return '<span class="mono">' + (prefix || '') + Number(v).toFixed(digits) + '</span>';
+}
+/* ---------------- Reasoning parser ----------------
+   pipeline.py joins steps as "[lexical] ... | [acoustic] ..."; anything
+   that doesn't match is shown verbatim. */
+function parseReasoning(raw) {
+  if (!raw) return null;
+  var parts = raw.split(/\s\|\s(?=\[)/);
+  var steps = [];
+  for (var i = 0; i < parts.length; i++) {
+    var m = /^\[(.+?)\]\s*([\s\S]*)$/.exec(parts[i]);
+    if (m) steps.push({ k: m[1], text: m[2] });
+  }
+  if (!steps.length) return [{ k: 'reasoning', text: raw }];
+  return steps;
+}
+
+function statusCell(f) {
+  var dot = '<span class="dot dot--' + f.status + '"></span>';
+  if (f.status === 'processing' || f.status === 'pending') {
+    return '<span class="status status--' + f.status + '">' + dot + sk('w40') + '</span>';
+  }
+  var html = '<span class="status status--' + f.status + '">' + dot +
+             '<span class="status__text">' + esc(f.status) + '</span></span>';
+  if (f.error) {
+    var l1 = f.error.split('\n')[0];
+    html += '<br><span class="err-line">' + esc(l1) + '</span>';
+    if (f.error.length > l1.length + 1) {
+      var id = 'e' + f.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+      html += ' <span class="err-toggle" data-err="' + id + '">trace</span>';
+      html += '<div class="err-detail" id="' + id + '">' + esc(f.error) + '</div>';
+    }
+  }
+  return html;
+}
+
+/* =================== Batch-level state (survives each poll) =================== */
+var allFiles = [];
+var tableState = { filter: 'all', query: '', sortKey: null, sortDir: 1, page: 1, pageSize: 10, openName: null };
+
+function r(f) { return f.result || {}; }
+
+/* ---------------- KPI strip ---------------- */
+function renderKpis(files, cost) {
+  var box = document.getElementById('kpis');
+  var done = files.filter(function (f) { return f.status === 'done'; });
+  var errored = files.filter(function (f) { return f.status === 'error'; });
+  var total = files.length;
+
+  var maxProc = Math.max.apply(null, files.map(function (f) { return f.processing_s || 0; }).concat([0.001]));
+  var bars = files.map(function (f) {
+    var h = f.processing_s != null ? clamp(6 + 22 * (f.processing_s / maxProc), 4, 28) : 4;
+    return '<i class="st-' + f.status + '" style="height:' + h.toFixed(0) + 'px" title="' +
+           esc(f.name) + (f.processing_s != null ? ' · ' + f.processing_s.toFixed(1) + 's' : '') + '"></i>';
+  }).join('');
+
+  var totalAudioS = done.reduce(function (s, f) { return s + (f.audio_s || 0); }, 0);
+  var totalProcS = done.reduce(function (s, f) { return s + (f.processing_s || 0); }, 0);
+  var throughput = totalProcS > 0 ? totalAudioS / totalProcS : null;
+  var audioPct = (totalAudioS + totalProcS) > 0 ? 100 * totalAudioS / (totalAudioS + totalProcS) : 50;
+
+  var progressSub = errored.length
+    ? errored.length + ' error' + (errored.length === 1 ? '' : 's')
+    : (total - done.length - errored.length) + ' remaining';
+
+  // By hand, not via stat(): these cards need an inline viz slot.
+  box.innerHTML =
+    '<div class="stat">' +
+      '<div class="stat__k">Analyzed</div>' +
+      '<div class="stat__v">' + done.length + '<span class="unit">/' + total + '</span></div>' +
+      '<div class="stat__sub">' + (done.length === total ? 'batch complete' : progressSub) + '</div>' +
+      '<div class="stat__viz"><div class="microbars">' + bars + '</div></div>' +
+    '</div>' +
+    '<div class="stat">' +
+      '<div class="stat__k">Audio processed</div>' +
+      '<div class="stat__v">' + (totalAudioS / 60).toFixed(1) + '<span class="unit">min</span></div>' +
+      '<div class="stat__sub">' + done.length + ' clip' + (done.length === 1 ? '' : 's') +
+        (done.length ? ' · avg ' + (totalAudioS / done.length).toFixed(1) + 's' : '') + '</div>' +
+    '</div>' +
+    '<div class="stat">' +
+      '<div class="stat__k">Throughput</div>' +
+      '<div class="stat__v">' + (throughput != null ? throughput.toFixed(2) + '×' : '—') + '</div>' +
+      '<div class="stat__sub">realtime' + (throughput != null && throughput >= 1 ? ' (faster)' : throughput != null ? ' (slower)' : '') + '</div>' +
+      (totalAudioS + totalProcS > 0 ?
+        '<div class="stat__viz"><div class="duobar"><span class="duobar__audio" style="width:' + audioPct.toFixed(1) + '%"></span>' +
+        '<span class="duobar__proc" style="width:' + (100 - audioPct).toFixed(1) + '%"></span></div>' +
+        '<div class="duobar-legend"><span><span class="swatch duobar__audio"></span>Audio ' + totalAudioS.toFixed(0) + 's</span>' +
+        '<span><span class="swatch duobar__proc"></span>Compute ' + totalProcS.toFixed(0) + 's</span></div></div>' : '') +
+    '</div>';
+
+  if (cost && cost.total_audio_s > 0) {
+    var pct = cost.pct_of_ceiling, ok = cost.within_ceiling;
+    box.innerHTML +=
+      '<div class="stat stat--verdict ' + (ok ? 'stat--pass' : 'stat--fail') + '">' +
+        '<div class="stat__k">Ceiling · $' + cost.ceiling_per_audio_min.toFixed(3) + '/min</div>' +
+        '<div class="stat__v">' + pct.toFixed(1) + '% ' + (ok ? 'used' : 'over') + '</div>' +
+        '<div class="stat__sub">$' + cost.usd_per_audio_min.toFixed(5) + '/min · $' + cost.total_usd.toFixed(6) + ' total</div>' +
+        '<div class="stat__viz"><div class="gauge"><div class="gauge__fill" style="width:' + Math.min(100, pct).toFixed(1) + '%"></div></div></div>' +
+      '</div>';
+  }
+  box.hidden = false;
+}
+
+/* ---------------- Distribution + pipeline panels ---------------- */
+/* fmtN formats the legend's number column: counts, seconds or dollars. */
+function segChart(counts, order, colorMap, labelMap, fmtN) {
+  fmtN = fmtN || function (n) { return String(n); };
+  var total = 0;
+  order.forEach(function (k) { total += counts[k] || 0; });
+  if (!total) return '';
+  var bar = order.map(function (k) {
+    var n = counts[k] || 0;
+    if (!n) return '';
+    return '<span style="width:' + (100 * n / total).toFixed(2) + '%;background:' + colorMap[k] + '"></span>';
+  }).join('');
+  var legend = order.map(function (k) {
+    var n = counts[k] || 0;
+    return '<div class="seglegend__row">' +
+      '<span class="seglegend__dot" style="background:' + colorMap[k] + '"></span>' +
+      '<span class="seglegend__label">' + esc(labelMap ? labelMap[k] : k) + '</span>' +
+      '<span class="seglegend__spacer"></span>' +
+      '<span class="seglegend__n">' + fmtN(n) + '</span>' +
+      '<span class="seglegend__pct">' + (100 * n / total).toFixed(0) + '%</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="segbar">' + bar + '</div><div class="seglegend">' + legend + '</div>';
+}
+function fmtSecs(n) { return n.toFixed(1) + 's'; }
+function fmtUsd(n) { return '$' + n.toFixed(6); }
+
+function metricBlock(title, body) {
+  return '<div class="metric-block"><div class="eyebrow" style="margin-bottom:10px">' + title + '</div>' + body + '</div>';
+}
+
+function renderDistributions(done) {
+  var body = document.getElementById('dist-body');
+  var hint = document.getElementById('dist-hint');
+  if (!done.length) { body.innerHTML = '<p class="lede" style="margin:0">No completed clips yet.</p>'; hint.textContent = ''; return; }
+  hint.textContent = done.length + ' clip' + (done.length === 1 ? '' : 's');
+
+  var toneCounts = {}, sevCounts = {}, qualCounts = {};
+  done.forEach(function (f) {
+    var res = r(f);
+    toneCounts[res.emotional_tone] = (toneCounts[res.emotional_tone] || 0) + 1;
+    sevCounts[res.background_noise_severity] = (sevCounts[res.background_noise_severity] || 0) + 1;
+    qualCounts[res.audio_quality] = (qualCounts[res.audio_quality] || 0) + 1;
+  });
+
+  body.innerHTML =
+    metricBlock('Emotional tone', segChart(toneCounts, TONES, TONE_COLOR)) +
+    metricBlock('Noise severity', segChart(sevCounts, SEVERITY, SEVERITY_COLOR)) +
+    metricBlock('Audio quality', segChart(qualCounts, QUALITY, QUALITY_COLOR,
+      { clear: 'clear', slightly_impaired: 'slightly impaired', severely_impaired: 'severely impaired' }));
+}
+
+var STAGE_LABEL = {
+  asr: 'Transcription (ASR)', llm_tone: 'Tone classification (LLM)',
+  emotion2vec: 'Emotion (acoustic)', dsp_features: 'DSP features',
+  panns_noise: 'Noise tagging', pyannote_overlap: 'Overlap detection',
+  vad: 'Silence (VAD)', load_normalize: 'Load & normalize',
+  diarize: 'Diarization', per_speaker_prosody: 'Per-speaker prosody'
+};
+var STAGE_ORDER = Object.keys(STAGE_LABEL);
+
+function renderPipeline(done) {
+  var body = document.getElementById('pipeline-body');
+  if (!done.length) { body.innerHTML = '<p class="lede" style="margin:0">No completed clips yet.</p>'; return; }
+
+  var stageTotals = {};
+  done.forEach(function (f) {
+    var t = f.stage_timings_s || {};
+    Object.keys(t).forEach(function (k) { stageTotals[k] = (stageTotals[k] || 0) + t[k]; });
+  });
+  // Drop stages that never ran or are rounding noise (<0.05s).
+  var stageKeys = STAGE_ORDER.filter(function (k) { return (stageTotals[k] || 0) >= 0.05; })
+    .sort(function (a, b) { return stageTotals[b] - stageTotals[a]; });
+  var stageColors = {}; stageKeys.forEach(function (k, i) { stageColors[k] = CATPALETTE[i % CATPALETTE.length]; });
+
+  var costKeys = ['fresh_input_usd', 'cached_input_usd', 'reasoning_usd', 'visible_output_usd'];
+  var costLabel = { fresh_input_usd: 'Fresh input', cached_input_usd: 'Cached input', reasoning_usd: 'Reasoning', visible_output_usd: 'Visible output' };
+  var costTotals = {};
+  done.forEach(function (f) {
+    var c = f.cost_breakdown || {};
+    costKeys.forEach(function (k) { costTotals[k] = (costTotals[k] || 0) + (c[k] || 0); });
+  });
+  var costColors = {}; costKeys.forEach(function (k, i) { costColors[k] = CATPALETTE[i % CATPALETTE.length]; });
+
+  body.innerHTML =
+    metricBlock('Time by stage (sum across completed clips)', segChart(stageTotals, stageKeys, stageColors, STAGE_LABEL, fmtSecs)) +
+    metricBlock('Cost by token class', segChart(costTotals, costKeys, costColors, costLabel, fmtUsd));
+}
+
+/* ---------------- Accuracy vs. manifest ---------------- */
+var ACC_FIELDS = [
+  'emotional_tone', 'emotional_intensity', 'background_noise_present',
+  'background_noise_type', 'background_noise_severity', 'audio_quality',
+  'speaker_overlap_present', 'long_silence_present'
+];
+var ACC_LABEL = {
+  emotional_tone: 'Emotional tone', emotional_intensity: 'Emotional intensity',
+  background_noise_present: 'Noise present', background_noise_type: 'Noise type',
+  background_noise_severity: 'Noise severity', audio_quality: 'Audio quality',
+  speaker_overlap_present: 'Speaker overlap', long_silence_present: 'Long silence'
+};
+
+function fieldsMatch(a, b) {
+  if (typeof a === 'string' && typeof b === 'string') return a.trim().toLowerCase() === b.trim().toLowerCase();
+  return a === b;
+}
+
+function renderAccuracy(done) {
+  var panel = document.getElementById('panel-accuracy');
+  var labeled = done.filter(function (f) { return f.expected; });
+  if (!labeled.length) { panel.hidden = true; return; }
+  panel.hidden = false;
+
+  var totalMatched = 0, totalCompared = 0;
+  var rows = ACC_FIELDS.map(function (field) {
+    var matched = 0;
+    labeled.forEach(function (f) {
+      if (fieldsMatch(r(f)[field], f.expected[field])) matched++;
+    });
+    totalMatched += matched; totalCompared += labeled.length;
+    var pct = 100 * matched / labeled.length;
+    var color = pct >= 80 ? 'var(--chart-0)' : pct >= 50 ? 'var(--chart-1)' : 'var(--chart-2)';
+    return '<div>' +
+      '<div class="accbar__head"><span class="accbar__field">' + ACC_LABEL[field] + '</span>' +
+      '<span class="accbar__frac">' + matched + '/' + labeled.length + '</span></div>' +
+      // 1.5% floor: a 0-width fill is indistinguishable from no data.
+      '<div class="accbar__track"><div class="accbar__fill" style="width:' + Math.max(pct, 1.5).toFixed(1) + '%;background:' + color + '"></div></div>' +
+    '</div>';
+  }).join('');
+
+  var overall = 100 * totalMatched / totalCompared;
+  document.getElementById('acc-body').innerHTML =
+    '<div class="acc-overall"><span class="acc-overall__v">' + overall.toFixed(0) + '%</span>' +
+    '<span class="acc-overall__k">overall field match · ' + labeled.length + ' of ' + done.length +
+    ' completed clip' + (done.length === 1 ? '' : 's') + ' had a manifest label ' +
+    '(<code>confidence</code> excluded -- ground truth is a fixed constant, not a per-clip judgment)</span></div>' +
+    '<div class="accgrid">' + rows + '</div>';
+}
+
+/* ---------------- Table: filter, search, sort, paginate ---------------- */
+var TAB_ORDER = ['all', 'done', 'processing', 'pending', 'error'];
+var TAB_LABEL = { all: 'All', done: 'Done', processing: 'Processing', pending: 'Pending', error: 'Error' };
+
+function renderTabs(files) {
+  var counts = { all: files.length };
+  files.forEach(function (f) { counts[f.status] = (counts[f.status] || 0) + 1; });
+  var html = TAB_ORDER.filter(function (t) { return t === 'all' || counts[t]; }).map(function (t) {
+    return '<span class="tab' + (tableState.filter === t ? ' is-active' : '') + '" data-tab="' + t +
+      '" role="button" tabindex="0" aria-pressed="' + (tableState.filter === t) + '">' +
+      TAB_LABEL[t] + '<span class="tab__n">' + (counts[t] || 0) + '</span></span>';
+  }).join('');
+  document.getElementById('tabs').innerHTML = html;
+}
+
+var SORTERS = {
+  name:      function (f) { return f.name.toLowerCase(); },
+  tone:      function (f) { return TONES.indexOf(r(f).emotional_tone); },
+  intensity: function (f) { return INTENSITY.indexOf(r(f).emotional_intensity); },
+  severity:  function (f) { return SEVERITY.indexOf(r(f).background_noise_severity); },
+  quality:   function (f) { return QUALITY.indexOf(r(f).audio_quality); },
+  conf:      function (f) { return r(f).confidence; },
+  time:      function (f) { return f.processing_s; },
+  cost:      function (f) { return f.cost_usd; }
+};
+
+function visibleFiles() {
+  var list = allFiles;
+  if (tableState.filter !== 'all') list = list.filter(function (f) { return f.status === tableState.filter; });
+  if (tableState.query) {
+    var q = tableState.query.toLowerCase();
+    list = list.filter(function (f) { return f.name.toLowerCase().indexOf(q) !== -1; });
+  }
+  if (tableState.sortKey) {
+    var acc = SORTERS[tableState.sortKey], dir = tableState.sortDir;
+    list = list.slice().sort(function (a, b) {
+      var av = acc(a), bv = acc(b);
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;   // undecided values sort last regardless of direction
+      if (bv == null) return -1;
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }
+  return list;
+}
+
+function detailRow(f) {
+  var steps = parseReasoning(f.llm_reasoning);
+  var reasoningHtml = steps ? steps.map(function (s) {
+    return '<div class="reasoning-step"><span class="reasoning-step__k">' + esc(s.k) + '</span><div>' + esc(s.text) + '</div></div>';
+  }).join('') : '<span class="chip is-muted">no reasoning recorded</span>';
+  return '<tr class="detail-row"><td colspan="13"><div class="detail-grid">' +
+    '<div><div class="detail-col__k">Transcript sent to the tone model</div>' +
+    '<div class="detail-transcript">' + esc(f.transcript || '(none)') + '</div></div>' +
+    '<div><div class="detail-col__k">Model reasoning (evidence → label, in generation order)</div>' +
+    '<div class="detail-reasoning">' + reasoningHtml + '</div></div>' +
+    '</div></td></tr>';
+}
+
+function renderTable() {
+  var filtered = visibleFiles();
+  var pageSize = tableState.pageSize || filtered.length || 1;
+  var pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  tableState.page = clamp(tableState.page, 1, pageCount);
+  var start = (tableState.page - 1) * pageSize;
+  var pageFiles = tableState.pageSize ? filtered.slice(start, start + pageSize) : filtered;
+
+  var tb = document.getElementById('tb');
+  if (!allFiles.length) {
+    tb.innerHTML = '<tr><td colspan="13" class="empty-cell"><b>No files in this batch</b>Nothing was extracted from the upload.</td></tr>';
+  } else if (!pageFiles.length) {
+    tb.innerHTML = '<tr><td colspan="13" class="empty-cell"><b>No matching files</b>Try a different filter or search.</td></tr>';
+  } else {
+    var h = '';
+    pageFiles.forEach(function (f) {
+      var res = r(f);
+      var pending = (f.status === 'pending' || f.status === 'processing');
+      var hasDetail = f.status === 'done' && (f.transcript || f.llm_reasoning);
+      var isOpen = tableState.openName === f.name;
+      h += '<tr class="' + (hasDetail ? 'has-detail' : '') + (isOpen ? ' is-open' : '') + '"' +
+           (hasDetail ? ' data-name="' + esc(f.name) + '" role="button" tabindex="0" aria-expanded="' + isOpen + '"' : '') + '>' +
+        '<td title="' + esc(f.name) + '">' + (hasDetail ? '<span class="rowtoggle">›</span>' : '') + esc(f.name) + '</td>' +
+        '<td>' + statusCell(f) + '</td>' +
+        '<td>' + (pending ? sk('w60') : chip(res.emotional_tone, res.emotional_tone !== 'neutral')) + '</td>' +
+        '<td>' + (pending ? sk('w40') : meter(res.emotional_intensity, INTENSITY)) + '</td>' +
+        '<td class="mid">' + (pending ? sk('w20') : bool(res.background_noise_present)) + '</td>' +
+        '<td>' + (pending ? sk('w40') : chip(res.background_noise_type, false)) + '</td>' +
+        '<td class="col-sev">' + (pending ? sk('w30') : meter(res.background_noise_severity, SEVERITY)) + '</td>' +
+        '<td>' + (pending ? sk('w40') : chip(res.audio_quality, res.audio_quality !== 'clear')) + '</td>' +
+        '<td class="mid">' + (pending ? sk('w20') : bool(res.speaker_overlap_present)) + '</td>' +
+        '<td class="mid col-sil">' + (pending ? sk('w20') : bool(res.long_silence_present)) + '</td>' +
+        '<td class="num col-conf">' + (pending ? sk('w20') : conf(res.confidence)) + '</td>' +
+        '<td class="num">' + (pending ? sk('w30') : secs(f.processing_s)) + '</td>' +
+        '<td class="num col-cost">' + (pending ? sk('w30') : num(f.cost_usd, 6, '$')) + '</td>' +
+      '</tr>';
+      if (isOpen) h += detailRow(f);
+    });
+    tb.innerHTML = h;
+  }
+
+  document.getElementById('pgPos').textContent = tableState.page + ' / ' + pageCount;
+  document.getElementById('pgPrev').disabled = tableState.page <= 1;
+  document.getElementById('pgNext').disabled = tableState.page >= pageCount;
+
+  document.querySelectorAll('table.results th.sortable').forEach(function (th) {
+    th.classList.toggle('sort-asc', th.dataset.key === tableState.sortKey && tableState.sortDir === 1);
+    th.classList.toggle('sort-desc', th.dataset.key === tableState.sortKey && tableState.sortDir === -1);
+    th.querySelector('.arrow').textContent =
+      th.dataset.key === tableState.sortKey ? (tableState.sortDir === 1 ? '↑' : '↓') : '↕';
+  });
+}
+
+/* ---------------- Wiring ---------------- */
+document.getElementById('tabs').addEventListener('click', function (e) {
+  var t = e.target.closest('.tab'); if (!t) return;
+  tableState.filter = t.dataset.tab; tableState.page = 1; renderTabs(allFiles); renderTable();
+});
+document.getElementById('q').addEventListener('input', function (e) {
+  tableState.query = e.target.value; tableState.page = 1; renderTable();
+});
+document.getElementById('pagesize').addEventListener('change', function (e) {
+  tableState.pageSize = Number(e.target.value); tableState.page = 1; renderTable();
+});
+document.getElementById('pgPrev').addEventListener('click', function () { tableState.page--; renderTable(); });
+document.getElementById('pgNext').addEventListener('click', function () { tableState.page++; renderTable(); });
+document.querySelector('table.results thead').addEventListener('click', function (e) {
+  var th = e.target.closest('th.sortable'); if (!th) return;
+  var key = th.dataset.key;
+  if (tableState.sortKey === key) tableState.sortDir *= -1;
+  else { tableState.sortKey = key; tableState.sortDir = 1; }
+  renderTable();
+});
+document.getElementById('tb').addEventListener('click', function (e) {
+  var errToggle = e.target.closest('.err-toggle');
+  if (errToggle) { document.getElementById(errToggle.dataset.err).classList.toggle('open'); return; }
+  var row = e.target.closest('tr.has-detail'); if (!row) return;
+  var name = row.dataset.name;
+  tableState.openName = (tableState.openName === name) ? null : name;
+  renderTable();
+});
+
+/* role="button" on non-native elements needs Enter/Space wired by hand.
+   Delegated on body since each render rebuilds them. */
+document.body.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  var target = e.target.closest('.tab, th.sortable, tr.has-detail');
+  if (!target) return;
+  e.preventDefault();
+  target.click();
+});
+
+function renderValErrors(errors) {
+  var box = document.getElementById('val-errors');
+  if (!errors || !errors.length) { box.innerHTML = ''; return; }
+  var h = '<div class="alert alert--warning"><strong>Validation notes</strong><ul>';
+  errors.forEach(function (e) { h += '<li>' + esc(e) + '</li>'; });
+  box.innerHTML = h + '</ul></div>';
+}
+
+async function poll() {
+  try {
+    var res = await fetch('/jobs/' + jobId + '/status.json');
+    if (res.status === 401) {
+      document.getElementById('pt').innerHTML = 'Session expired — <a href="/login">sign in again</a>';
+      return;
+    }
+    var data = await res.json();
+    renderValErrors(data.validation_errors);
+    var total = data.total || 0;
+    var doneCount = (data.counts.done || 0) + (data.counts.error || 0);
+    var pct = total ? Math.round(100 * doneCount / total) : 0;
+    document.getElementById('pfill').style.width = pct + '%';
+    document.getElementById('ptrack').setAttribute('aria-valuenow', pct);
+    document.getElementById('ppct').textContent = pct + '%';
+    document.getElementById('pt').innerHTML =
+      '<b>' + doneCount + '</b> / ' + total + ' analyzed' +
+      (data.status === 'done' ? '' : ' · ' + esc(data.status));
+
+    allFiles = data.files || [];
+    var done = allFiles.filter(function (f) { return f.status === 'done'; });
+
+    if (allFiles.length) {
+      renderKpis(allFiles, data.cost);
+      document.getElementById('panels').hidden = done.length === 0;
+      renderDistributions(done);
+      renderPipeline(done);
+      renderAccuracy(done);
+    }
+    renderTabs(allFiles);
+    renderTable();
+
+    if (data.status === 'done') document.getElementById('dl').hidden = false;
+    else setTimeout(poll, 1500);
+  } catch (e) {
+    document.getElementById('pt').textContent = 'Connection error — retrying…';
+    setTimeout(poll, 3000);
+  }
+}
+poll();
+</script>
+{% endblock %}

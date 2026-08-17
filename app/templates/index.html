@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>New batch</h1>
+</div>
+<p class="lede">Drop a ZIP archive or individual audio files, optionally with a
+<code>labels.csv</code> manifest. The CSV needs <code>name</code> and
+<code>result_json</code> columns; <code>result_json</code> may be empty for unlabeled sets.</p>
+
+{% if error %}<div class="alert alert--error" role="alert"><strong>Upload rejected.</strong> {{ error }}</div>{% endif %}
+
+<form method="post" action="/upload" enctype="multipart/form-data" id="upload-form">
+  <label class="dropzone" id="dz" for="fi">
+    <span class="dropzone__icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="dropzone__label">Click to select or drag files here</span>
+    <span class="dropzone__hint">ZIP · WAV · MP3 · OGG · FLAC · M4A · OPUS · CSV</span>
+    <ul class="dropzone__files" id="fl" hidden></ul>
+    <input type="file" id="fi" name="files" multiple required
+           accept=".zip,.wav,.mp3,.ogg,.flac,.m4a,.opus,.csv">
+  </label>
+  <div class="btn-row" style="margin-top: var(--s4)">
+    <button type="submit" class="btn btn--primary" id="sb">Upload &amp; analyze</button>
+  </div>
+</form>
+
+<script>
+(function () {
+  var dz = document.getElementById('dz'), fi = document.getElementById('fi'),
+      fl = document.getElementById('fl'), sb = document.getElementById('sb'),
+      form = document.getElementById('upload-form');
+
+  function showFiles() {
+    if (!fi.files.length) { fl.hidden = true; fl.textContent = ''; return; }
+    fl.textContent = '';
+    Array.from(fi.files).forEach(function (f) {
+      var li = document.createElement('li');
+      li.textContent = f.name;
+      fl.appendChild(li);
+    });
+    fl.hidden = false;
+  }
+  fi.addEventListener('change', showFiles);
+  ['dragenter', 'dragover'].forEach(function (e) {
+    dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (e) {
+    dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.remove('drag'); });
+  });
+  dz.addEventListener('drop', function (ev) { fi.files = ev.dataTransfer.files; showFiles(); });
+  form.addEventListener('submit', function () { sb.disabled = true; sb.textContent = 'Uploading…'; });
+})();
+</script>
+{% endblock %}

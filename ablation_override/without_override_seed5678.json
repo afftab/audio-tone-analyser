@@ -1,0 +1,1828 @@
+{
+  "dataset": "IEMOCAP (Ar4ikov/iemocap_audio_text)",
+  "n_samples": 150,
+  "n_errors": 0,
+  "per_class_n": 30,
+  "mapping": {
+    "neu": "neutral",
+    "hap": "satisfied",
+    "exc": "satisfied",
+    "fru": "frustrated",
+    "ang": "upset",
+    "fea": "distressed"
+  },
+  "excluded_emotions": [
+    "sad",
+    "sur",
+    "oth"
+  ],
+  "errors": [],
+  "emotional_tone": {
+    "accuracy": 0.4266666666666667,
+    "macro_f1": 0.41321688837478315,
+    "confusion_matrix": {
+      "labels": [
+        "neutral",
+        "satisfied",
+        "frustrated",
+        "upset",
+        "distressed"
+      ],
+      "matrix": [
+        [
+          22,
+          4,
+          4,
+          0,
+          0
+        ],
+        [
+          15,
+          11,
+          2,
+          1,
+          1
+        ],
+        [
+          11,
+          3,
+          7,
+          6,
+          3
+        ],
+        [
+          4,
+          3,
+          3,
+          18,
+          2
+        ],
+        [
+          18,
+          1,
+          3,
+          2,
+          6
+        ]
+      ]
+    },
+    "report": {
+      "neutral": {
+        "precision": 0.3142857142857143,
+        "recall": 0.7333333333333333,
+        "f1-score": 0.44,
+        "support": 30.0
+      },
+      "satisfied": {
+        "precision": 0.5,
+        "recall": 0.36666666666666664,
+        "f1-score": 0.4230769230769231,
+        "support": 30.0
+      },
+      "frustrated": {
+        "precision": 0.3684210526315789,
+        "recall": 0.23333333333333334,
+        "f1-score": 0.2857142857142857,
+        "support": 30.0
+      },
+      "upset": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6,
+        "f1-score": 0.631578947368421,
+        "support": 30.0
+      },
+      "distressed": {
+        "precision": 0.5,
+        "recall": 0.2,
+        "f1-score": 0.2857142857142857,
+        "support": 30.0
+      },
+      "accuracy": 0.4266666666666667,
+      "macro avg": {
+        "precision": 0.46987468671679194,
+        "recall": 0.42666666666666664,
+        "f1-score": 0.41321688837478315,
+        "support": 150.0
+      },
+      "weighted avg": {
+        "precision": 0.469874686716792,
+        "recall": 0.4266666666666667,
+        "f1-score": 0.41321688837478304,
+        "support": 150.0
+      }
+    }
+  },
+  "emotional_intensity": {
+    "accuracy": 0.48,
+    "macro_f1": 0.4372070276894006,
+    "confusion_matrix": {
+      "labels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "matrix": [
+        [
+          7,
+          7,
+          1
+        ],
+        [
+          25,
+          26,
+          11
+        ],
+        [
+          10,
+          24,
+          39
+        ]
+      ]
+    },
+    "report": {
+      "low": {
+        "precision": 0.16666666666666666,
+        "recall": 0.4666666666666667,
+        "f1-score": 0.24561403508771928,
+        "support": 15.0
+      },
+      "medium": {
+        "precision": 0.45614035087719296,
+        "recall": 0.41935483870967744,
+        "f1-score": 0.4369747899159664,
+        "support": 62.0
+      },
+      "high": {
+        "precision": 0.7647058823529411,
+        "recall": 0.5342465753424658,
+        "f1-score": 0.6290322580645161,
+        "support": 73.0
+      },
+      "accuracy": 0.48,
+      "macro avg": {
+        "precision": 0.4625042999656002,
+        "recall": 0.47342269357293665,
+        "f1-score": 0.4372070276894006,
+        "support": 150.0
+      },
+      "weighted avg": {
+        "precision": 0.5773615411076711,
+        "recall": 0.48,
+        "f1-score": 0.5113066822654359,
+        "support": 150.0
+      }
+    }
+  },
+  "per_sample": [
+    {
+      "titre": "Ses01M_impro05_F021",
+      "emotion": "neu",
+      "asr_transcript": "And your featured user.",
+      "ref_transcript": " ...and your future...",
+      "arousal_model": 0.101,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses02F_script01_2_M005",
+      "emotion": "neu",
+      "asr_transcript": "Well, so what?",
+      "ref_transcript": " Well, so what?",
+      "arousal_model": 0.144,
+      "true_tone": "neutral",
+      "pred_tone": "frustrated",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_impro07_F031",
+      "emotion": "neu",
+      "asr_transcript": "That's gonna that will be reserved for somebody else.",
+      "ref_transcript": " That's going to--that'll be reserved for somebody else.",
+      "arousal_model": 0.237,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04M_impro08_M026",
+      "emotion": "neu",
+      "asr_transcript": "God, that's like the whole problem with like.",
+      "ref_transcript": " God, that's like a whole problem with like-- But, no, I mean, hey-- if you ever",
+      "arousal_model": 0.564,
+      "true_tone": "neutral",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05F_impro01_M003",
+      "emotion": "neu",
+      "asr_transcript": "Well, I have no camera here. I can't help you at all here, ma'am. I have forms for something completely different. You need to go to a different place. Can I?",
+      "ref_transcript": " Well, I have no camera here.  I can't help you at all here, ma'am.  I have forms for something completely different.  You need to go to a different place.",
+      "arousal_model": 0.437,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script02_2_M023",
+      "emotion": "neu",
+      "asr_transcript": "It was when we were driving past that you know, that Knickerbocker liquor locker and you had said, No, you said, Let's get some champagne and I said, No, time's a wasting or something like that. That'",
+      "ref_transcript": " It was when we were driving passed that knickerbocker liquor locker and you would said, no you said \"let's get some champagne\" and I said \"no time to wasting\" or something like that.  That's what it ",
+      "arousal_model": 0.349,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses02M_impro01_F005",
+      "emotion": "neu",
+      "asr_transcript": "I I can take your driver's license, but I ac I need another form of ID in order to process this paperwork.",
+      "ref_transcript": " I- I can take your driver's license but I need another form of ID in order to process this paper work.",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03M_impro05a_F001",
+      "emotion": "neu",
+      "asr_transcript": "Well, let me just check on that for you. Where are you coming from?",
+      "ref_transcript": " Well, let me just check on that for you.  Where are you coming--?",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_impro03_M047",
+      "emotion": "neu",
+      "asr_transcript": "I don't know, okay? I mean gosh, it's just there's there's a lot of look, there's a lot of pressure in getting married, okay?",
+      "ref_transcript": " I don't know.  Okay.  I mean gosh.  There's just- look there's a lot of pressure in getting married, okay.",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05F_script02_1_F011",
+      "emotion": "neu",
+      "asr_transcript": "Not particularly.",
+      "ref_transcript": " Not particularly.",
+      "arousal_model": 0.161,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses01F_impro04_F005",
+      "emotion": "neu",
+      "asr_transcript": "He just",
+      "ref_transcript": " He just...",
+      "arousal_model": 0.35,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses02M_script03_2_M032",
+      "emotion": "neu",
+      "asr_transcript": "All right, I will.",
+      "ref_transcript": " All right. I will.",
+      "arousal_model": 0.295,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_impro04_M014",
+      "emotion": "neu",
+      "asr_transcript": "Have you been going into auditions and stuff?",
+      "ref_transcript": " Have you been going to auditions and stuff?",
+      "arousal_model": 0.34,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_impro04_M030",
+      "emotion": "neu",
+      "asr_transcript": "I don't know, it's like I'm trying to be",
+      "ref_transcript": " I don't know it's like I'm trying to be-",
+      "arousal_model": 0.392,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05M_impro04_F004",
+      "emotion": "neu",
+      "asr_transcript": "That's not what they want.",
+      "ref_transcript": " Right.",
+      "arousal_model": 0.153,
+      "true_tone": "neutral",
+      "pred_tone": "frustrated",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses01F_script01_3_F005",
+      "emotion": "neu",
+      "asr_transcript": "And then you you can kinda",
+      "ref_transcript": " And then, you.  You've been kind of...",
+      "arousal_model": 0.35,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_1_M024",
+      "emotion": "neu",
+      "asr_transcript": "I don't care what you do, see. You could paint yourself green and dance naked in the Place Vendome and rush off madly with all the men in the world, and I shan't say a word, as long as you love me bes",
+      "ref_transcript": " I don't care what you do.  See, you could paint yourself green and dance naked in the Place Vendome and rush off madly with all the men in the world and I shan't say a word.  As long as you love me b",
+      "arousal_model": 0.599,
+      "true_tone": "neutral",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03M_impro05b_F001",
+      "emotion": "neu",
+      "asr_transcript": "Okay, well let's well, I'm gonna go ahead and check on that for you. You're coming from where are you coming from?",
+      "ref_transcript": " Okay.  Well let's...well I'm going to go ahead and check on that for you.  You're coming from...where are you coming from?",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_impro03_M030",
+      "emotion": "neu",
+      "asr_transcript": "Greens and blues and maybe a little light yellow.",
+      "ref_transcript": " Greens and blues and maybe a little light yellow?",
+      "arousal_model": 0.101,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05M_script03_2_F002",
+      "emotion": "neu",
+      "asr_transcript": "Not at all. I quite like it. I wear it often.",
+      "ref_transcript": " Not at all.  I quite like it.  I wear it often.",
+      "arousal_model": 0.516,
+      "true_tone": "neutral",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01F_impro07_M013",
+      "emotion": "neu",
+      "asr_transcript": "That's good. Don't you have to like teach a class too when you do that?",
+      "ref_transcript": " That's good.  Don't you have to like teach a class, too, when you do that?",
+      "arousal_model": 0.6,
+      "true_tone": "neutral",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses02M_script02_2_M021",
+      "emotion": "neu",
+      "asr_transcript": "Yeah, okay, sure. No, I I see. Um listen, you wanna dance?",
+      "ref_transcript": " Yea. Okay, sure, no. I see. Listen, you want to dance?",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script01_2_M004",
+      "emotion": "neu",
+      "asr_transcript": "Well, so what?",
+      "ref_transcript": " Well, so what?",
+      "arousal_model": 0.192,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_script03_2_M024",
+      "emotion": "neu",
+      "asr_transcript": "Did you see much of Peter Burton after our divorce?",
+      "ref_transcript": " Did you see much of Peter Burden after our divorce?",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05F_script02_2_M002",
+      "emotion": "neu",
+      "asr_transcript": "It certainly is not. It's slightly exaggerated scientific fact.",
+      "ref_transcript": " It certainly is not. It's slightly exaggerated scientific fact.",
+      "arousal_model": 0.113,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses01M_impro04_F002",
+      "emotion": "neu",
+      "asr_transcript": "What do you mean?",
+      "ref_transcript": " What do you mean?",
+      "arousal_model": 0.346,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses02M_impro08_M020",
+      "emotion": "neu",
+      "asr_transcript": "Uh-huh. I mean usually uh sites are are pretty well protected, but sometimes I mean uh information gets out. So",
+      "ref_transcript": " Uh-ha, I mean usually sites are pretty well protected but sometimes I mean information gets out, so",
+      "arousal_model": 0.1,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03M_impro03_F015",
+      "emotion": "neu",
+      "asr_transcript": "Yeah.",
+      "ref_transcript": " Yeah.  That's, you know, okay.",
+      "arousal_model": 0.499,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_impro04_M033",
+      "emotion": "neu",
+      "asr_transcript": "You don't have to do it.",
+      "ref_transcript": " I'm trying to watch TV.",
+      "arousal_model": 0.11,
+      "true_tone": "neutral",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05M_impro07_F038",
+      "emotion": "neu",
+      "asr_transcript": "Totally.",
+      "ref_transcript": " totally.",
+      "arousal_model": 0.486,
+      "true_tone": "neutral",
+      "pred_tone": "satisfied",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_impro07_M027",
+      "emotion": "exc",
+      "asr_transcript": "Yeah yeah.",
+      "ref_transcript": " They're nice.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_impro03_M024",
+      "emotion": "exc",
+      "asr_transcript": "Yeah, yeah. I w not too sure where yet, I guess, you know. I ga kinda gotta figure some stuff out here first.",
+      "ref_transcript": " Yea, yea, I'm not too sure where yet I guess you know, I kind of got to figure some stuff out here first",
+      "arousal_model": 0.212,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03M_impro07_M022",
+      "emotion": "exc",
+      "asr_transcript": "Yeah, and said get whatever you want and",
+      "ref_transcript": " Yeah and they said get whatever you want and...",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04F_script01_3_F027",
+      "emotion": "exc",
+      "asr_transcript": "Because you mustn't feel that way anymore. Because you have a right to whatever you have, Chris. Do you understand everything?",
+      "ref_transcript": " Because you mustn't feel that way anymore because you have a right to whatever you have, Chris, do you understand, everything",
+      "arousal_model": 0.35,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05F_script02_1_M003",
+      "emotion": "exc",
+      "asr_transcript": "Oh no, you know what I did? I forgot my flashlight. How could it be so stupid? I can't believe I forgot my flashlight.",
+      "ref_transcript": " Oh no, you know what I did.  I forgot my flashlight.  How could I be so stupid?  I can't believe I forgot my flashlight.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script02_2_F001",
+      "emotion": "hap",
+      "asr_transcript": "About what?",
+      "ref_transcript": " About what?",
+      "arousal_model": 1.0,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses02M_script03_1_F027",
+      "emotion": "hap",
+      "asr_transcript": "The manager came in and found us rolling around on the floor, biting and scratching like panthers.",
+      "ref_transcript": " The manager came in and found us rolling around on the floor biting and scratching like panthers.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03F_script02_1_M040",
+      "emotion": "exc",
+      "asr_transcript": "And it's single mindedness with one mind Urgency that's pure urge, you know they don't give it a name",
+      "ref_transcript": " its single-mindedness with one mind. Urgency that's pure urge. You know, they don't give it a name.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04M_impro07_F007",
+      "emotion": "exc",
+      "asr_transcript": "Yeah.",
+      "ref_transcript": " Yes.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script03_1_M023",
+      "emotion": "exc",
+      "asr_transcript": "Oh, darling. Kiss me before your body rots and worms start popping in and out of your eye sockets.",
+      "ref_transcript": " [garbage] Darling, kiss me before your body rots and worms start popping in and out of your eye sockets.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01F_script01_3_M017",
+      "emotion": "hap",
+      "asr_transcript": "Give me a kiss.",
+      "ref_transcript": " Give me a kiss.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script02_2_M046",
+      "emotion": "hap",
+      "asr_transcript": "Or not.",
+      "ref_transcript": " Or not.",
+      "arousal_model": 0.217,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03M_script03_1_M009",
+      "emotion": "exc",
+      "asr_transcript": "Mm. Things that should matter dreadfully don't seem to matter at all when one's happy, do they?",
+      "ref_transcript": " um- Things that should matter dreadfully don't seem to matter at all when one's happy do they?",
+      "arousal_model": 0.35,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_impro03_F001",
+      "emotion": "exc",
+      "asr_transcript": "It's really exciting. Don't you wanna guess?",
+      "ref_transcript": " It's really exciting.  Don't you want to guess?",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05F_script01_3_M016",
+      "emotion": "exc",
+      "asr_transcript": "Oh god, I kissed Annie. I can't believe I kissed Annie. How long have I waited to do this?",
+      "ref_transcript": " Oh God- I kissed Annie! I can't believe I kissed Annie!  How long I've wanted to do this.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_script01_3_M042",
+      "emotion": "hap",
+      "asr_transcript": "",
+      "ref_transcript": " Annie...",
+      "arousal_model": 0.35,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_impro07_M009",
+      "emotion": "hap",
+      "asr_transcript": "It was, you know, I wasn't too sure. I mean, I, you know, it was kind of last minute for like the application.",
+      "ref_transcript": " it was you know I wasn't too sure I mean you know it was kind of last minute for like the application",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_script02_1_M024",
+      "emotion": "exc",
+      "asr_transcript": "Well this is like the highlight, the one night of their lives. And that flopping around, that's laying eggs or spawning or mating or whatever you",
+      "ref_transcript": " Well this is like the highlight, the one night of their lives and that flopping around, that's laying eggs or spawning or mating or whatever you call it.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04F_impro07_F046",
+      "emotion": "exc",
+      "asr_transcript": "Yay for me.",
+      "ref_transcript": " Yay for me.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script03_1_M022",
+      "emotion": "exc",
+      "asr_transcript": "Oh, so is everyone else in the long run? Let's be superficial and pity the poor philosophers. Let's blow trumpets and squeakers and enjoy the party as long as we can, like little quite idiotic school ",
+      "ref_transcript": " So is everyone else in the long run.  Let's be superficial and pity the poor philosophers.  Let's blow trumpets and squeakers and enjoy the party as long as we can, like little quiet idiotic school c",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_impro07_M028",
+      "emotion": "exc",
+      "asr_transcript": "Wow. Like ki you know like police officers, like kinda heavyset guys? Mustaches? Yeah, it's that kinda.",
+      "ref_transcript": " Like, you know like police officers, like--kind of heavyset guys. Mustaches, yeah. It's that kind of-",
+      "arousal_model": 0.101,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses02F_script02_1_M003",
+      "emotion": "exc",
+      "asr_transcript": "How you doing?",
+      "ref_transcript": " How you doing?",
+      "arousal_model": 0.597,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03M_script03_1_M007",
+      "emotion": "exc",
+      "asr_transcript": "Ah What are we to do if they suddenly walk in on us?",
+      "ref_transcript": " What are we to do if they suddenly walk in on us?",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "distressed",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_impro07_M028",
+      "emotion": "exc",
+      "asr_transcript": "That's awesome.",
+      "ref_transcript": " That's awesome.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05F_impro07_F038",
+      "emotion": "exc",
+      "asr_transcript": "go to school like a couple of months.",
+      "ref_transcript": " Woo-",
+      "arousal_model": 0.599,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_impro03_M013",
+      "emotion": "exc",
+      "asr_transcript": "And you will pay the rent or you'll pay the rent.",
+      "ref_transcript": " Oh good idea.",
+      "arousal_model": 0.366,
+      "true_tone": "satisfied",
+      "pred_tone": "upset",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_1_M002",
+      "emotion": "exc",
+      "asr_transcript": "Must be them then.",
+      "ref_transcript": " Must be them, then.",
+      "arousal_model": 0.347,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script02_1_M036",
+      "emotion": "exc",
+      "asr_transcript": "I wouldn't miss this for anything. I mean, think about this. Okay, I know you're not interested, but just think about this for a minute.",
+      "ref_transcript": " I wouldn't miss this for anything. I mean, think about this. Okay, I know you're not interested, but just think about this for a minute.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04M_impro07_F022",
+      "emotion": "exc",
+      "asr_transcript": "But congrats on the US C thing.",
+      "ref_transcript": " But, congrats on the U.S.C. thing.",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05F_impro03_M000",
+      "emotion": "exc",
+      "asr_transcript": "Yeah.",
+      "ref_transcript": " What?",
+      "arousal_model": 0.6,
+      "true_tone": "satisfied",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script01_2_M002",
+      "emotion": "fru",
+      "asr_transcript": "Don't look at me like that. He didn't tell me anything, he told you.",
+      "ref_transcript": " Don't look at me like that.  He didn't tell me anything he told you.",
+      "arousal_model": 0.476,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_2_M028",
+      "emotion": "fru",
+      "asr_transcript": "As I mentioned before, I have had three minute liqueur glasses of brandy the whole evening long. A child of two couldn't get drunk on that.",
+      "ref_transcript": " As I mentioned before, I have had three minute liquor glasses of brandy the whole evening long.  A child of two couldn't get drunk on that.",
+      "arousal_model": 0.59,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03F_script02_1_F004",
+      "emotion": "fru",
+      "asr_transcript": "Yes.",
+      "ref_transcript": " Yes.",
+      "arousal_model": 0.581,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_script02_2_M035",
+      "emotion": "fru",
+      "asr_transcript": "You know what you get, Carly? This.",
+      "ref_transcript": " you know what you get Carla, this.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05F_script02_2_F004",
+      "emotion": "fru",
+      "asr_transcript": "I'm sorry, it's just fish to me.",
+      "ref_transcript": " I am sorry.  It's just fish to me.",
+      "arousal_model": 0.35,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses01F_script01_1_F006",
+      "emotion": "fru",
+      "asr_transcript": "It's gonna be just like after he died. What's the meaning of that?",
+      "ref_transcript": " It's getting to be just like after he died.  What's the meaning of that?",
+      "arousal_model": 0.35,
+      "true_tone": "frustrated",
+      "pred_tone": "distressed",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script01_1_M031",
+      "emotion": "fru",
+      "asr_transcript": "I can't help it. I I know her best. I mean, I live next door to her my whole life. But these years when I think of a wife, I think of Annie.",
+      "ref_transcript": " I can't help it I know her best. I mean lived next door to her my whole life. These years when I think of a wife, I think of Annie.",
+      "arousal_model": 0.35,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03M_script01_3_F010",
+      "emotion": "fru",
+      "asr_transcript": "Well, what other reason from her point of view would I be coming here?",
+      "ref_transcript": " Well what other reason, from her point of view, would I be coming here?",
+      "arousal_model": 0.319,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04M_script01_1_M023",
+      "emotion": "fru",
+      "asr_transcript": "She's not Larry's girl.",
+      "ref_transcript": " She's not Larry's girl.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_impro04_M012",
+      "emotion": "fru",
+      "asr_transcript": "I go in for these interviews and they're all cool and everything, you know, they're nice and I'm nice to them and, you know, hmm, give and take and back and forth and whatever.",
+      "ref_transcript": " I go in for these interviews, and they're all cool and everything, you know.  Their nice and I'm nice to them, you know, give and take, back and forth, and whatever.",
+      "arousal_model": 0.6,
+      "true_tone": "frustrated",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01F_script01_1_F011",
+      "emotion": "fru",
+      "asr_transcript": "Where's the proof? Do you have any proof?",
+      "ref_transcript": " Where's the proof?  Do you have any proof?",
+      "arousal_model": 0.591,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script01_1_F029",
+      "emotion": "fru",
+      "asr_transcript": "I don't want a diagram. I'm he thinks he's coming back, Chris. You married that girl. You're pronouncing him dead.",
+      "ref_transcript": " I don't want a diagram. He thinks he's coming back. Chris, you marry this girl you're pronouncing him dead.",
+      "arousal_model": 0.344,
+      "true_tone": "frustrated",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03M_script03_1_F002",
+      "emotion": "fru",
+      "asr_transcript": "What are we to do?",
+      "ref_transcript": " What are you going to do?",
+      "arousal_model": 0.598,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_script01_2_F021",
+      "emotion": "fru",
+      "asr_transcript": "I can't help it.",
+      "ref_transcript": " I can't help it.",
+      "arousal_model": 0.35,
+      "true_tone": "frustrated",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05F_impro01_F021",
+      "emotion": "fru",
+      "asr_transcript": "Do you have a manager I could speak with?",
+      "ref_transcript": " Do you have a manager I could speak with?",
+      "arousal_model": 0.1,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses01F_impro06_F001",
+      "emotion": "fru",
+      "asr_transcript": "No, no, no.",
+      "ref_transcript": " No, no, no.",
+      "arousal_model": 0.345,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_2_F026",
+      "emotion": "fru",
+      "asr_transcript": "I expect it's because you're drunk.",
+      "ref_transcript": " I expect it's because you're drunk.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_impro05a_F013",
+      "emotion": "fru",
+      "asr_transcript": "Sir, it seems to me that your luggage is not here.",
+      "ref_transcript": " Sir it seems to me that your luggage is um- is not here",
+      "arousal_model": 0.1,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04M_impro05_F018",
+      "emotion": "fru",
+      "asr_transcript": "We really, we want to work with you. We really, we want to help.",
+      "ref_transcript": " We really -- we want to work with you. We really -- we want to help.",
+      "arousal_model": 0.103,
+      "true_tone": "frustrated",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05F_script02_1_F008",
+      "emotion": "fru",
+      "asr_transcript": "There is no point in coming out here. You're right.",
+      "ref_transcript": " There is no point in coming out here.",
+      "arousal_model": 0.35,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script02_1_F001",
+      "emotion": "fru",
+      "asr_transcript": "Oh.",
+      "ref_transcript": " Ugh...",
+      "arousal_model": 0.599,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script01_1_M000",
+      "emotion": "fru",
+      "asr_transcript": "He saw it.",
+      "ref_transcript": " He saw it.",
+      "arousal_model": 0.155,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script03_2_F021",
+      "emotion": "fru",
+      "asr_transcript": "Adders don't snap, they sting.",
+      "ref_transcript": " Adders don't snap, they sting.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04M_script03_2_M005",
+      "emotion": "fru",
+      "asr_transcript": "I knew nothing of the sort. You took presents from him.",
+      "ref_transcript": " I knew nothing of the sort.  You took presents from him.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_impro05_M013",
+      "emotion": "fru",
+      "asr_transcript": "How can you lose my luggage, like, from like in",
+      "ref_transcript": " How can you lose my luggage like from like, in --",
+      "arousal_model": 0.355,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script02_2_F006",
+      "emotion": "fru",
+      "asr_transcript": "Everybody s believes that they it it keeps them excited, you know, it keeps them coming back for more.",
+      "ref_transcript": " Everybody is believes that it keeps them excited, you know it keeps them coming back for more.",
+      "arousal_model": 0.6,
+      "true_tone": "frustrated",
+      "pred_tone": "satisfied",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script03_2_M013",
+      "emotion": "fru",
+      "asr_transcript": "You needn't be so grand just because you don't happen to want yourself right now.",
+      "ref_transcript": " You needn't be so grand just because don't happen want any yourself right now.",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_impro04_M007",
+      "emotion": "fru",
+      "asr_transcript": "Be a receptionist. Oh, I spent forty thousand dollars a year for my college degree and I'm a receptionist. God.",
+      "ref_transcript": " To be a receptionist?  Oh I spent forty thousand dollar a year for my college degree and I'm a receptionist.  God.",
+      "arousal_model": 0.6,
+      "true_tone": "frustrated",
+      "pred_tone": "frustrated",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_script02_1_F009",
+      "emotion": "fru",
+      "asr_transcript": "That's my point.",
+      "ref_transcript": " That's my point.",
+      "arousal_model": 0.221,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05M_script03_2_F014",
+      "emotion": "fru",
+      "asr_transcript": "What?",
+      "ref_transcript": " What?",
+      "arousal_model": 1.0,
+      "true_tone": "frustrated",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01F_script01_2_F005",
+      "emotion": "ang",
+      "asr_transcript": "What is going on here, Joe?",
+      "ref_transcript": " What is going on here, Joe?",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses02F_script03_2_F038",
+      "emotion": "ang",
+      "asr_transcript": "Listen, listen indeed. I am sick and tired of listening to you, you dansadistic bully.",
+      "ref_transcript": " Listen?  Listen, indeed.  I am sick and tired of listening to you, damn sadistic bully.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_script03_2_F020",
+      "emotion": "ang",
+      "asr_transcript": "I think you should have some more brandy.",
+      "ref_transcript": " I think you should have some more brandy...",
+      "arousal_model": 0.1,
+      "true_tone": "upset",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04M_script01_1_F012",
+      "emotion": "ang",
+      "asr_transcript": "How are you going to prove it? Can you prove it?",
+      "ref_transcript": " How are you going to prove it?  Can you prove it?",
+      "arousal_model": 0.999,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script01_1b_M022",
+      "emotion": "ang",
+      "asr_transcript": "What the hell with that?",
+      "ref_transcript": " what to hell with that!",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_script01_1_F035",
+      "emotion": "ang",
+      "asr_transcript": "Are you crazy?",
+      "ref_transcript": " Are you crazy?",
+      "arousal_model": 0.6,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses02F_impro05_F010",
+      "emotion": "ang",
+      "asr_transcript": "Because you don't seem to care very much, you know?",
+      "ref_transcript": " Because you don't seem to care very much, you know.",
+      "arousal_model": 0.993,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_impro05a_M004",
+      "emotion": "ang",
+      "asr_transcript": "So there?",
+      "ref_transcript": " Is it there?",
+      "arousal_model": 0.968,
+      "true_tone": "upset",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04M_script03_2_M050",
+      "emotion": "ang",
+      "asr_transcript": "Wicked little beast, and I hope I never see you again as long as I live.",
+      "ref_transcript": " wicked little beast. And I- I hope I never see you again as long as live.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05F_script03_2_M043",
+      "emotion": "ang",
+      "asr_transcript": "Shut up. Shut up. I wouldn't marry you again if you came crawling to me on bended knee. You're a mean, evil-minded little vampire, and I hope that God I never set eyes on you again.",
+      "ref_transcript": " Shut up, shut up.  I wouldn't marry you again if you came crawling to me on bended knee. You're a mean, evil-minded little vampire and I hope to God I never set eyes on you again.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01F_impro04_F030",
+      "emotion": "ang",
+      "asr_transcript": "You are so high and mighty. I just",
+      "ref_transcript": " You are so high and mighty.  I just--",
+      "arousal_model": 0.6,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_impro01_F020",
+      "emotion": "ang",
+      "asr_transcript": "With your driver's license and your passport, just like everybody else.",
+      "ref_transcript": " With your driver's license and your passport.  Just like everybody else.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_script02_2_F000",
+      "emotion": "ang",
+      "asr_transcript": "About what?",
+      "ref_transcript": " About what?",
+      "arousal_model": 0.981,
+      "true_tone": "upset",
+      "pred_tone": "frustrated",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04F_impro04_F006",
+      "emotion": "ang",
+      "asr_transcript": "What? Who says that? Bananas don't grow overnight?",
+      "ref_transcript": " What?  Who says that?  Bananas don't grow overnight.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script03_2_F038",
+      "emotion": "ang",
+      "asr_transcript": "Stop. W would you just go away? I mean, you're conceited and overbearing and utterly impossible.",
+      "ref_transcript": " Stop.  Would you just go away?  I mean, you're conceited, and overbearing, and utterly impossible.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01F_script03_2_F035",
+      "emotion": "ang",
+      "asr_transcript": "You're far too temperamental. Try to control yourself.",
+      "ref_transcript": " You are far too temperamental, try to control yourself.",
+      "arousal_model": 0.993,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses02F_script01_2_F013",
+      "emotion": "ang",
+      "asr_transcript": "But why did that happen the very night she came here? She sleeps in his room and his memorial breaks to pieces. Just look, look at it.",
+      "ref_transcript": " But why did that happen the very night she came here?  She sleeps in his room and his memorial breaks to pieces.  Just look.  Look at it.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_impro05a_M001",
+      "emotion": "ang",
+      "asr_transcript": "Yeah, you do that. I'm coming from Baltimore. Do you know where that is?",
+      "ref_transcript": " Yeah.  You do that.  I'm coming from Baltimore.  You know where that is?",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04M_script03_2_M040",
+      "emotion": "ang",
+      "asr_transcript": "Very good idea, I will.",
+      "ref_transcript": " Very good idea.  I will",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script03_2_F044",
+      "emotion": "ang",
+      "asr_transcript": "That's pretty pretty.",
+      "ref_transcript": " pig",
+      "arousal_model": 0.825,
+      "true_tone": "upset",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_script01_2_F012",
+      "emotion": "ang",
+      "asr_transcript": "Believe with me, Joe. You've got to believe. Only last week a boy came back missing longer than Larry. You read it yourself.",
+      "ref_transcript": " Believe with me Joe, you got to believe. Only last week a boy came back missing longer then Larry you read it yourself.",
+      "arousal_model": 0.599,
+      "true_tone": "upset",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script01_1_M035",
+      "emotion": "ang",
+      "asr_transcript": "I'll get out. I'll get married and go live someplace else, maybe New York. Are you crazy?",
+      "ref_transcript": " I'll get out.  I'll get married and go live some place else.  Maybe New York.",
+      "arousal_model": 0.351,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03F_impro02_M030",
+      "emotion": "ang",
+      "asr_transcript": "I'm not thinking about just me, I'm thinking about our child.",
+      "ref_transcript": " I'm not thinking about just me; I'm thinking about our child.",
+      "arousal_model": 0.349,
+      "true_tone": "upset",
+      "pred_tone": "distressed",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04F_script03_2_F022",
+      "emotion": "ang",
+      "asr_transcript": "I don't care. Okay, do you understand? I don't care. I don't mind if they bark and roll about like hoops.",
+      "ref_transcript": " I don't care, okay.  Do you understand?  I don't care.  I don't mind if they bark and roll about like hoops.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script01_1b_F032",
+      "emotion": "ang",
+      "asr_transcript": "But you have a business here. What the hell is this?",
+      "ref_transcript": " But you have a business here.  What the hell is this?",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_script01_3_F027",
+      "emotion": "ang",
+      "asr_transcript": "Because you mustn't feel that way. Everything you have, you have a right to.",
+      "ref_transcript": " 'Cause you mustn't feel that way.  Everything you have, you have a right to...",
+      "arousal_model": 0.35,
+      "true_tone": "upset",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_2_F014",
+      "emotion": "ang",
+      "asr_transcript": "What?",
+      "ref_transcript": " What?",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses03M_impro05a_M016",
+      "emotion": "ang",
+      "asr_transcript": "Oh, oh, that's a good deduction.",
+      "ref_transcript": " Oh, oh, that's a good deduction.",
+      "arousal_model": 0.636,
+      "true_tone": "upset",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04F_impro05_F012",
+      "emotion": "ang",
+      "asr_transcript": "I expect your airline, who was responsible for my bag, to give me the equivalent of the bag and all of the things in it.",
+      "ref_transcript": " I expect your airline who was responsible for my bag to give me the equivalent of the bag and all of the things in it.",
+      "arousal_model": 1.0,
+      "true_tone": "upset",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_impro01_M003",
+      "emotion": "ang",
+      "asr_transcript": "What's wrong about this form? It says new ID on it.",
+      "ref_transcript": " What's wrong about this form?  It says new I.D. on it.",
+      "arousal_model": 0.6,
+      "true_tone": "upset",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01F_script03_1_M001",
+      "emotion": "fea",
+      "asr_transcript": "Wonderful.",
+      "ref_transcript": " I wonder.",
+      "arousal_model": 0.599,
+      "true_tone": "distressed",
+      "pred_tone": "satisfied",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_impro05_F027",
+      "emotion": "fea",
+      "asr_transcript": "I'm sorry, I j I",
+      "ref_transcript": " I'm sorry. I don't- I-",
+      "arousal_model": 0.105,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script01_1_F001",
+      "emotion": "fea",
+      "asr_transcript": "What how did he see it? I mean, I was the first one of it. He was still in bed.",
+      "ref_transcript": " What-how did he see it? I mean, I was the first one up. He was still in bed.",
+      "arousal_model": 0.351,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04M_script01_1_M003",
+      "emotion": "fea",
+      "asr_transcript": "I don't know. After it cracked, he ran back in the house and cried in the kitchen.",
+      "ref_transcript": " I don't know.  After it cracked, he ran back in the house and cried in the kitchen.",
+      "arousal_model": 0.35,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "low",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05M_impro02_F019",
+      "emotion": "fea",
+      "asr_transcript": "I mean, I know that you're a good soldier, but not everybody else is. And what if.",
+      "ref_transcript": " I mean, I-I know that you're a good soldier, but not everybody else is. and what if",
+      "arousal_model": 0.35,
+      "true_tone": "distressed",
+      "pred_tone": "frustrated",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_script03_1_F002",
+      "emotion": "fea",
+      "asr_transcript": "What are we gonna do?",
+      "ref_transcript": " What we're going to do?",
+      "arousal_model": 0.354,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script03_1_F016",
+      "emotion": "fea",
+      "asr_transcript": "Well, what happens if one of us dies? When does the one that left still laugh?",
+      "ref_transcript": " Well, what happens if one of us dies, does the one that's left still laugh?",
+      "arousal_model": 0.264,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script03_1_M006",
+      "emotion": "fea",
+      "asr_transcript": "Hello? Hello? What? Ugh, wrong number.",
+      "ref_transcript": " Hello? Hello? What? Ugh, wrong number.",
+      "arousal_model": 0.733,
+      "true_tone": "distressed",
+      "pred_tone": "frustrated",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses04M_script01_1_M004",
+      "emotion": "fea",
+      "asr_transcript": "No, I I figured the best thing was to leave him alone.",
+      "ref_transcript": " No.  I - I figured the best thing was to leave him alone.",
+      "arousal_model": 0.35,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses05F_script01_1_F016",
+      "emotion": "fea",
+      "asr_transcript": "Why",
+      "ref_transcript": " why?",
+      "arousal_model": 0.711,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "low",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01F_script01_1_F003",
+      "emotion": "fea",
+      "asr_transcript": "When?",
+      "ref_transcript": " When?",
+      "arousal_model": 0.564,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script01_3_M004",
+      "emotion": "fea",
+      "asr_transcript": "What?",
+      "ref_transcript": " What?",
+      "arousal_model": 0.296,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03M_script01_3_F024",
+      "emotion": "fea",
+      "asr_transcript": "Now, what is it? Your mother?",
+      "ref_transcript": " No, what is it?  Your mother?",
+      "arousal_model": 0.301,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04M_script01_1_F004",
+      "emotion": "fea",
+      "asr_transcript": "Did you talk to him?",
+      "ref_transcript": " Did you talk to him?",
+      "arousal_model": 0.35,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses05F_script03_1_M006",
+      "emotion": "fea",
+      "asr_transcript": "Oh, what shall we do if they suddenly walk in on us?",
+      "ref_transcript": " Oh, what shall we do if they suddenly walk in on us?",
+      "arousal_model": 0.6,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses01M_script03_1_F001",
+      "emotion": "fea",
+      "asr_transcript": "Frida's the only one who knows we're here. She wouldn't ring up.",
+      "ref_transcript": " Freda is the only one who knows we are here. She wouldn't ring up.",
+      "arousal_model": 0.599,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02F_script03_1_M000",
+      "emotion": "fea",
+      "asr_transcript": "Good God.",
+      "ref_transcript": " Good God.",
+      "arousal_model": 0.535,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses03F_script03_1_M002",
+      "emotion": "fea",
+      "asr_transcript": "I wonder",
+      "ref_transcript": " I wonder.",
+      "arousal_model": 0.408,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04F_script03_1_M001",
+      "emotion": "fea",
+      "asr_transcript": "I wonder.",
+      "ref_transcript": " I wonder.",
+      "arousal_model": 0.999,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_impro02_F003",
+      "emotion": "fea",
+      "asr_transcript": "You didn't did you tell them you have two young children at home?",
+      "ref_transcript": " You didn't- Did you tell them you have two young children at home?",
+      "arousal_model": 0.387,
+      "true_tone": "distressed",
+      "pred_tone": "frustrated",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01F_script03_1_M000",
+      "emotion": "fea",
+      "asr_transcript": "Good God.",
+      "ref_transcript": " Good God.",
+      "arousal_model": 0.351,
+      "true_tone": "distressed",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script03_1_M002",
+      "emotion": "fea",
+      "asr_transcript": "Must be them then.",
+      "ref_transcript": " Must be them then.",
+      "arousal_model": 0.35,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script03_1_F003",
+      "emotion": "fea",
+      "asr_transcript": "What are we to do?",
+      "ref_transcript": " What are we to do?",
+      "arousal_model": 0.376,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "high",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses04M_script01_1_M028",
+      "emotion": "fea",
+      "asr_transcript": "So what? I'm not fast with women. I don't.",
+      "ref_transcript": " So what?  I'm not fast with women.",
+      "arousal_model": 1.0,
+      "true_tone": "distressed",
+      "pred_tone": "upset",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_script01_1_M001",
+      "emotion": "fea",
+      "asr_transcript": "He was out here when it broke.",
+      "ref_transcript": " He was out here when it broke.",
+      "arousal_model": 0.597,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses01M_impro01_M004",
+      "emotion": "fea",
+      "asr_transcript": "What?",
+      "ref_transcript": " Well...",
+      "arousal_model": 0.353,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    },
+    {
+      "titre": "Ses02M_script03_1_M003",
+      "emotion": "fea",
+      "asr_transcript": "We're all right, darling, aren't we? Whatever happens?",
+      "ref_transcript": " We're all right darling, aren't we whatever happens?",
+      "arousal_model": 0.223,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses03F_script01_1_F000",
+      "emotion": "fea",
+      "asr_transcript": "What's he gonna say? Maybe we ought to talk to him before he sees it.",
+      "ref_transcript": " What's he going to say? Maybe we ought to talk to him before he sees it.",
+      "arousal_model": 0.14,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "medium",
+      "pred_intensity": "low"
+    },
+    {
+      "titre": "Ses04M_script03_1_M002",
+      "emotion": "fea",
+      "asr_transcript": "It must be them then.",
+      "ref_transcript": " It must be them, then.",
+      "arousal_model": 1.0,
+      "true_tone": "distressed",
+      "pred_tone": "neutral",
+      "true_intensity": "high",
+      "pred_intensity": "high"
+    },
+    {
+      "titre": "Ses05M_impro02_F016",
+      "emotion": "fea",
+      "asr_transcript": "Oh my god.",
+      "ref_transcript": " Oh, my God.",
+      "arousal_model": 0.358,
+      "true_tone": "distressed",
+      "pred_tone": "distressed",
+      "true_intensity": "medium",
+      "pred_intensity": "medium"
+    }
+  ]
+}

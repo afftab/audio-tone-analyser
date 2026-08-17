@@ -1,0 +1,44 @@
+{
+  "call_001.ogg": {
+    "duration_s": 30.9396875,
+    "processing_s": 19.157136917114258,
+    "stage_timings_s": {
+      "load_normalize": 0.0650022029876709,
+      "dsp_features": 1.3721601963043213,
+      "vad": 0.47970032691955566,
+      "asr": 7.6288909912109375,
+      "panns_noise": 0.6041998863220215,
+      "pyannote_overlap": 0.5981872081756592,
+      "emotion2vec": 4.983541965484619,
+      "llm_tone": 3.425318956375122
+    }
+  },
+  "call_002.ogg": {
+    "duration_s": 34.960625,
+    "processing_s": 5.902400970458984,
+    "stage_timings_s": {
+      "load_normalize": 0.11693334579467773,
+      "dsp_features": 0.6533939838409424,
+      "vad": 0.14191889762878418,
+      "asr": 0.9367170333862305,
+      "panns_noise": 0.2191309928894043,
+      "pyannote_overlap": 0.22818994522094727,
+      "emotion2vec": 1.1538870334625244,
+      "llm_tone": 2.4521448612213135
+    }
+  },
+  "call_003.ogg": {
+    "duration_s": 171.92125,
+    "processing_s": 23.369834899902344,
+    "stage_timings_s": {
+      "load_normalize": 0.3304119110107422,
+      "dsp_features": 3.5417439937591553,
+      "vad": 0.6954460144042969,
+      "asr": 4.639606952667236,
+      "panns_noise": 2.5658199787139893,
+      "pyannote_overlap": 2.6128299236297607,
+      "emotion2vec": 5.773975133895874,
+      "llm_tone": 3.2098159790039062
+    }
+  }
+}
