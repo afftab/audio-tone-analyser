@@ -17,6 +17,16 @@ for the full design rationale and `TECHNICAL_MEMO.md` for the writeup of
 approaches tested, validation results, cost/latency analysis, and known
 limitations.
 
+## Hosted dashboard
+
+**URL:** https://vta.afftab.me
+**Login:** provided separately to AutoAce (not committed to this repo)
+
+Served over a Cloudflare named Tunnel (stable DNS record on `afftab.me`,
+TLS terminated at Cloudflare's edge) from a host running the app locally on
+port 8001. See `.run/com.vta.app.plist` and `.run/com.vta.cloudflared.plist`
+for the LaunchAgent definitions that keep both processes running.
+
 ## Architecture
 
 Nine required fields are resolved by seven independent local models/DSP
@@ -80,9 +90,20 @@ uv run python scripts/validate_synthetic.py     # synthetic validation -> valida
 
 ## Deployment (Docker)
 
+The build needs read access to the gated `pyannote/segmentation-3.0` model,
+passed as a BuildKit secret (not a build-arg -- it's never baked into an
+image layer this way):
+
 ```bash
-docker build --build-arg HF_TOKEN=$HF_TOKEN -t vta .
+export HF_TOKEN=...  # same token as in .env, needs gated-repo read access
+DOCKER_BUILDKIT=1 docker build --secret id=HF_TOKEN,env=HF_TOKEN -t vta .
 docker run -p 8000:8000 --env-file .env vta
+```
+
+Or via Compose, which wires this up automatically:
+
+```bash
+docker compose up -d --build
 ```
 
 The build predownloads parakeet, Silero VAD, pyannote/segmentation-3.0, and

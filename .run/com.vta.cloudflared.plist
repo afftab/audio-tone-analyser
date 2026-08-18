@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vta.cloudflared</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/cloudflared</string>
+        <string>tunnel</string>
+        <string>run</string>
+        <string>vta</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/aftab/Documents/Software Engineer Assessment/voice-tone-analyzer</string>
+    <key>StandardOutPath</key>
+    <string>/Users/aftab/Documents/Software Engineer Assessment/voice-tone-analyzer/.run/cloudflared.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/aftab/Documents/Software Engineer Assessment/voice-tone-analyzer/.run/cloudflared.log</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

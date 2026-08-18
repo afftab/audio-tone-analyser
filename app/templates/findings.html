@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}Findings{% endblock %}
+{% block nav %}<a href="/">Dashboard</a><a href="/logout">Log out</a>{% endblock %}
+{% block content %}
+{# nav override above swaps "Findings" for "Dashboard" since this IS the findings page #}
+<div class="pagehead">
+  <h1>Validation findings</h1>
+</div>
+<p class="lede">This page covers how the tone and noise classifier performs, how it compares to
+the closest published benchmark, and where it still falls short. Full methodology,
+ablations, and replication runs are in <code>TECHNICAL_MEMO.md</code>. Here we've
+summarized the numbers that matter most for a go/no-go decision.</p>
+
+<div class="card stats">
+  <div class="stat">
+    <div class="stat__k">Tone macro-F1 &middot; IEMOCAP (n=150)</div>
+    <div class="stat__v">0.49<span class="unit">this run</span></div>
+    <div class="stat__sub">0.45 &plusmn; 0.03 across a 5-seed replication (see &sect;2)</div>
+  </div>
+  <div class="stat">
+    <div class="stat__k">Cost &middot; $0.003/min ceiling</div>
+    <div class="stat__v">12% used</div>
+    <div class="stat__sub">$0.00036/audio-min measured, weighted across the 3 provided calls</div>
+    <div class="stat__viz"><div class="gauge"><div class="gauge__fill" style="width:12%;background:var(--n7)"></div></div></div>
+  </div>
+  <div class="stat">
+    <div class="stat__k">Latency</div>
+    <div class="stat__v">0.14&ndash;0.62<span class="unit">&times; realtime</span></div>
+    <div class="stat__sub">all 3 provided calls, single-threaded CPU, no batching</div>
+  </div>
+  <div class="stat">
+    <div class="stat__k">Real-world transfer (n=3)</div>
+    <div class="stat__v">1/3<span class="unit">tone matched</span></div>
+    <div class="stat__sub">the only 3 real labeled clips we have &ndash; see &ldquo;limitations&rdquo; below</div>
+  </div>
+</div>
+
+<div class="findings-section">
+  <h2>How this compares to published results</h2>
+  <p class="lede">The closest published benchmark for this approach (an LLM reasoning over
+  transcript and acoustic features) is arXiv:2602.06270, GPT-4o on IEMOCAP. Values below
+  are unweighted accuracy on their 5-class emotion split.</p>
+  <div class="panel-grid">
+    <div class="card panel">
+      <div class="panel__head"><h2>Transcript only</h2></div>
+      <div class="hbar-list">
+        {% set rows = [("Zero-shot baseline", 43.38, false), ("SpeechCueLLM", 49.97, false), ("VowelPrompt (SOTA)", 51.18, false), ("This system", 50.00, true)] %}
+        {% for name, val, subj in rows %}
+        <div class="hbar-row{{ ' is-subject' if subj else '' }}">
+          <div class="hbar-row__head">
+            <span class="hbar-row__name{{ ' is-subject' if subj else '' }}">{{ name }}</span>
+            <span class="hbar-row__val">{{ '%.1f'|format(val) }}%</span>
+          </div>
+          <div class="hbar__track"><div class="hbar__fill" style="width:{{ '%.1f'|format(val) }}%"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card panel">
+      <div class="panel__head"><h2>+ Prior-turn context</h2></div>
+      <div class="hbar-list">
+        {% set rows2 = [("Zero-shot baseline", 55.51, false), ("SpeechCueLLM", 60.07, false), ("VowelPrompt (SOTA)", 62.26, false), ("This system", 55.7, true)] %}
+        {% for name, val, subj in rows2 %}
+        <div class="hbar-row{{ ' is-subject' if subj else '' }}">
+          <div class="hbar-row__head">
+            <span class="hbar-row__name{{ ' is-subject' if subj else '' }}">{{ name }}</span>
+            <span class="hbar-row__val">{{ '%.1f'|format(val) }}%{{ ' (54.7–56.7 range)' if subj else '' }}</span>
+          </div>
+          <div class="hbar__track"><div class="hbar__fill" style="width:{{ '%.1f'|format(val) }}%"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="note">
+    <b>This isn't a perfectly fair comparison &ndash; our label set is harder.</b> The published
+    benchmark uses 5 classes: angry, happy, sad, neutral, excited. Ours adds a frustrated-vs-upset
+    distinction, separated only by degree of anger, which other published work sidesteps by
+    folding frustration into an &ldquo;others&rdquo; bucket. Our weakest class is
+    <code>frustrated</code> (F1 0.44 this run, as low as 0.33 in other configs), and that's the
+    exact boundary we added on top of the published task.
+  </div>
+</div>
+
+<div class="findings-section">
+  <h2>Where the ceiling actually is</h2>
+  <ul class="callout-list">
+    <li><b>Fine-tuned multimodal SOTA</b> on IEMOCAP 4-class reaches about 76.3% weighted
+    accuracy (GatedxLSTM); fine-tuned wav2vec2/HuBERT reaches about 73%. On real call-center
+    audio, the same class of model has been reported to drop to
+    <b>55&ndash;65%</b>, which is the actual deployment target here.</li>
+    <li><b>IEMOCAP's own inter-annotator agreement is only fair:</b> Fleiss&rsquo; &kappa; 0.27
+    across all classes, 0.48 on the four main ones. That caps what any system can score,
+    including the human labelers who built the benchmark.</li>
+    <li><b>Closing the gap to fine-tuned SOTA needs thousands of labeled emotional
+    utterances.</b> We were given three. We chose prompt-based classification over transcript
+    and acoustic features because it's competitive without that scale of data &ndash; see the
+    two-approach comparison in <code>TECHNICAL_MEMO.md</code>.</li>
+  </ul>
+</div>
+
+<div class="findings-section">
+  <h2>Confusion matrices &middot; IEMOCAP, n=150</h2>
+  <p class="lede">One representative validation run, mapped from IEMOCAP's native emotion labels
+  to this system's 5-class <code>emotional_tone</code> schema (neu&rarr;neutral, hap/exc&rarr;satisfied,
+  fru&rarr;frustrated, ang&rarr;upset, fea&rarr;distressed). 5-seed replication range is in
+  &sect;2 of the memo.</p>
+  <div class="panel-grid">
+    <div class="card panel">
+      <div class="panel__head"><h2>Emotional tone</h2><span class="hint">accuracy 0.493 &middot; macro-F1 0.494</span></div>
+      <div class="cm-wrap">
+        <table class="cm-grid">
+          <tr><th class="cm-corner"></th><th colspan="5">predicted</th></tr>
+          <tr><th></th><th>neutral</th><th>satisfied</th><th>frustrated</th><th>upset</th><th>distressed</th></tr>
+          <tr><th>neutral</th>
+            <td class="cm-diag" style="background:rgba(23,23,25,.34)">18</td>
+            <td style="background:rgba(23,23,25,.08)">1</td>
+            <td style="background:rgba(23,23,25,.20)">9</td>
+            <td style="background:rgba(23,23,25,.09)">2</td>
+            <td style="background:rgba(23,23,25,0)">0</td>
+          </tr>
+          <tr><th>satisfied</th>
+            <td style="background:rgba(23,23,25,.20)">9</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.23)">11</td>
+            <td style="background:rgba(23,23,25,.14)">5</td>
+            <td style="background:rgba(23,23,25,.11)">3</td>
+            <td style="background:rgba(23,23,25,.09)">2</td>
+          </tr>
+          <tr><th>frustrated</th>
+            <td style="background:rgba(23,23,25,.12)">4</td>
+            <td style="background:rgba(23,23,25,.09)">2</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.31)">16</td>
+            <td style="background:rgba(23,23,25,.17)">7</td>
+            <td style="background:rgba(23,23,25,.08)">1</td>
+          </tr>
+          <tr><th>upset</th>
+            <td style="background:rgba(23,23,25,0)">0</td>
+            <td style="background:rgba(23,23,25,.08)">1</td>
+            <td style="background:rgba(23,23,25,.17)">7</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.34)">18</td>
+            <td style="background:rgba(23,23,25,.12)">4</td>
+          </tr>
+          <tr><th>distressed</th>
+            <td style="background:rgba(23,23,25,.26)">13</td>
+            <td style="background:rgba(23,23,25,0)">0</td>
+            <td style="background:rgba(23,23,25,.15)">6</td>
+            <td style="background:rgba(23,23,25,0)">0</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.23)">11</td>
+          </tr>
+        </table>
+        <div class="cm-axis-label">rows = actual, columns = predicted &middot; ring = correct</div>
+      </div>
+      <div class="hbar-list">
+        {% for name, f1 in [("neutral", 0.487), ("satisfied", 0.489), ("frustrated", 0.439), ("upset", 0.600), ("distressed", 0.458)] %}
+        <div class="hbar-row">
+          <div class="hbar-row__head"><span class="hbar-row__name">{{ name }}</span><span class="hbar-row__val">F1 {{ '%.2f'|format(f1) }}</span></div>
+          <div class="hbar__track"><div class="hbar__fill" style="width:{{ '%.0f'|format(f1*100) }}%"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card panel">
+      <div class="panel__head"><h2>Emotional intensity</h2><span class="hint">accuracy 0.467 &middot; macro-F1 0.409</span></div>
+      <div class="cm-wrap">
+        <table class="cm-grid">
+          <tr><th class="cm-corner"></th><th colspan="3">predicted</th></tr>
+          <tr><th></th><th>low</th><th>medium</th><th>high</th></tr>
+          <tr><th>low</th>
+            <td class="cm-diag" style="background:rgba(23,23,25,.10)">4</td>
+            <td style="background:rgba(23,23,25,.12)">5</td>
+            <td style="background:rgba(23,23,25,.03)">1</td>
+          </tr>
+          <tr><th>medium</th>
+            <td style="background:rgba(23,23,25,.34)">29</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.36)">31</td>
+            <td style="background:rgba(23,23,25,.15)">11</td>
+          </tr>
+          <tr><th>high</th>
+            <td style="background:rgba(23,23,25,.08)">6</td>
+            <td style="background:rgba(23,23,25,.32)">28</td>
+            <td class="cm-diag" style="background:rgba(23,23,25,.40)">35</td>
+          </tr>
+        </table>
+        <div class="cm-axis-label">rows = actual, columns = predicted &middot; ring = correct</div>
+      </div>
+      <div class="hbar-list">
+        {% for name, f1 in [("low (n=10)", 0.163), ("medium (n=71)", 0.459), ("high (n=69)", 0.604)] %}
+        <div class="hbar-row">
+          <div class="hbar-row__head"><span class="hbar-row__name">{{ name }}</span><span class="hbar-row__val">F1 {{ '%.2f'|format(f1) }}</span></div>
+          <div class="hbar__track"><div class="hbar__fill" style="width:{{ '%.0f'|format(f1*100) }}%"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="source-note"><code>low</code> is the weak class here (n=10, F1 0.16). Most
+      low-intensity clips get pulled toward <code>medium</code>. We don't have enough real-world
+      data yet to know if that's a labeling-boundary issue or a genuine model gap.</p>
+    </div>
+  </div>
+</div>
+
+<div class="findings-section">
+  <h2>The other 7 schema fields &middot; synthetic benchmark</h2>
+  <p class="lede">These 7 fields run on deterministic DSP and local models, not the LLM. They're
+  validated on synthetic degradations of the 3 provided calls plus IEMOCAP audio (n=20&ndash;65
+  per field). See &sect;1 of the memo for the methodology behind each number.</p>
+  <div class="card panel">
+    <div class="hbar-list">
+      {% for name, acc, f1, n in [
+        ("background_noise_present", 0.975, 0.965, 40),
+        ("audio_quality", 0.933, 0.933, 30),
+        ("long_silence_present", 0.95, 0.95, 20),
+        ("speaker_overlap_present", 0.80, 0.79, 65),
+        ("background_noise_severity", 0.725, 0.711, 40)
+      ] %}
+      <div class="hbar-row">
+        <div class="hbar-row__head">
+          <span class="hbar-row__name">{{ name }} <span class="unit">n={{ n }}</span></span>
+          <span class="hbar-row__val">acc {{ '%.0f'|format(acc*100) }}% &middot; F1 {{ '%.2f'|format(f1) }}</span>
+        </div>
+        <div class="hbar__track"><div class="hbar__fill" style="width:{{ '%.0f'|format(acc*100) }}%"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="findings-section">
+  <h2>Cost &amp; latency, per clip</h2>
+  <div class="panel-grid">
+    <div class="card tablecard">
+      <div class="table-wrap">
+        <table class="simple-table">
+          <thead><tr><th>Clip</th><th>Duration</th><th>Cost</th><th>$/audio-min</th></tr></thead>
+          <tbody>
+            <tr><td>call_001</td><td>30.9s</td><td>$0.000464</td><td>$0.00090</td></tr>
+            <tr><td>call_002</td><td>35.0s</td><td>$0.000339</td><td>$0.00058</td></tr>
+            <tr><td>call_003</td><td>171.9s</td><td>$0.000616</td><td>$0.00022</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card tablecard">
+      <div class="table-wrap">
+        <table class="simple-table">
+          <thead><tr><th>Clip</th><th>Duration</th><th>Processing</th><th>&times; realtime</th></tr></thead>
+          <tbody>
+            <tr><td>call_001</td><td>30.9s</td><td>19.2s</td><td>0.62&times;</td></tr>
+            <tr><td>call_002</td><td>35.0s</td><td>5.9s</td><td>0.17&times;</td></tr>
+            <tr><td>call_003</td><td>171.9s</td><td>23.4s</td><td>0.14&times;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <p class="source-note">Weighted average: $0.00036/audio-min, 12% of the $0.003 ceiling.
+  Disclosure: OpenAI <code>gpt-5.6-luna</code>, $0.20/$1.20 per M input/output tokens, $0.02/M
+  cached input. Only derived transcript text and numeric acoustic features are sent to it;
+  customer audio never leaves this infrastructure. Every other stage (VAD, PANNs, pyannote,
+  ASR, emotion2vec+) runs locally at $0 marginal cost.</p>
+</div>
+
+<div class="findings-section">
+  <h2>Limitations</h2>
+  <ul class="callout-list">
+    <li><b>The IEMOCAP gains didn't visibly show up on the 3 real clips we were given.</b> Tone
+    stayed at 1/3 correct across all 8 configurations we tested, with and without diarization,
+    at 4 effort levels. With only 3 clips, each one is worth 33 percentage points, so this
+    sample can't confirm the +0.06 macro-F1 gain we measured from adding context, and it can't
+    rule it out either.</li>
+    <li><b><code>frustrated</code> vs <code>upset</code> is the weakest boundary</b>, distinguished
+    only by degree of anger. Published literature finds this axis hardest too, and other
+    systems typically avoid it by folding frustration into an &ldquo;other&rdquo; bucket
+    instead of reporting it separately.</li>
+    <li><b>The 7 non-LLM fields are validated on synthetic degradations</b>, at a scale
+    (n=20&ndash;65) too small for a production sign-off. Real audio often has multiple problems
+    in the same clip, and a synthetic generator that applies one degradation at a time won't
+    reproduce that.</li>
+    <li><b><code>confidence</code> is an uncalibrated placeholder.</b> All 3 labeled examples we
+    were given share the same constant (0.82), so there's no ground truth to calibrate against
+    yet. This is a known, documented gap.</li>
+  </ul>
+</div>
+
+<p class="source-note">Full methodology (leave-one-out and grouped validation, the two
+approaches compared, all ablations and seed-replication runs) is in
+<code>TECHNICAL_MEMO.md</code> and <code>PLAN.md</code> in the repository root.</p>
+{% endblock %}

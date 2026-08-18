@@ -153,6 +153,13 @@ def index(request: Request):
     return templates.TemplateResponse(request, "index.html", {})
 
 
+@app.get("/findings", response_class=HTMLResponse)
+def findings(request: Request):
+    if not _is_authed(request):
+        return RedirectResponse("/login", status_code=303)
+    return templates.TemplateResponse(request, "findings.html", {})
+
+
 @app.post("/upload")
 async def upload(request: Request, files: list[UploadFile]):
     if not _is_authed(request):

@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      secrets:
+        - HF_TOKEN
+    env_file: .env
+    environment:
+      VTA_ENV: production
+    restart: unless-stopped
+    expose:
+      - "8000"
+    volumes:
+      - vta_data:/home/user/app/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+secrets:
+  HF_TOKEN:
+    environment: HF_TOKEN
+
+volumes:
+  vta_data:
+  caddy_data:
+  caddy_config:
