@@ -607,6 +607,145 @@ been force-pushed to a public Space (now excluded, with a CI guard); ffmpeg
 ran without a timeout; and the tone call had no guard for truncation or
 refusal, so both surfaced as an unrelated `TypeError`.
 
+### 2f. Real-domain validation (HarperValleyBank)
+
+Every validation above is either synthetic degradation or an acted emotion
+corpus. HarperValleyBank (Gridspace + Stanford, public domain, real
+two-sided recordings of simulated bank customer-service calls) is the
+closest available domain match to AutoAce's actual production calls.
+`scripts/validate_harpervalley.py` runs the full production pipeline
+(`analyze_clip`, not individual modules) on a seeded random sample of 30 of
+the 1,446 sessions (~$0.02, ~9 minutes -- the full set would cost roughly
+$1 in tone-LLM calls but ~6-7 hours of local processing for one sequential
+run, for little additional statistical power).
+
+Caller and agent audio are separate, time-aligned single-channel files;
+they're summed into one mixed clip before analysis, since this system
+analyzes a single recording, not two channels. Ground truths come from the
+dataset's own annotations, not injected:
+
+| Field | n | Accuracy | Macro F1 | Confusion matrix |
+|---|---|---|---|---|
+| `emotional_tone` (positive/neutral only) | 30 | 0.60 | 0.489 | labels=[positive,neutral]: `[[2,2],[10,16]]` |
+| `speaker_overlap_present` | 30 | 0.60 | 0.583 | labels=[false,true]: `[[6,5],[7,12]]` |
+
+Two fields were validated in an earlier pass and then **removed from
+scoring** after investigation showed the ground truth, not the production
+model, was the problem:
+
+- **`audio_quality` vs. `caller_mos`.** Looked like a natural fit (1-5 MOS,
+  banded to the brief's 3-tier enum) until checked: HarperValleyBank's own
+  README defines `caller_mos` as "how well could the caller be understood"
+  -- a transcriptionist's intelligibility rating, not this system's
+  definition of technical degradation (clipping/static/echo/low
+  volume/robotic/packet loss). The acoustic features this system actually
+  uses show **no separation at all** between `mos=5` and `mos=3` clips in
+  the sample (SNR 38-79dB and 0.00% clipping in both groups; raw loudness
+  overlaps almost completely too). Scoring against `caller_mos` would mean
+  fitting to the wrong target, so it's reported descriptively only: 30/30
+  clips predicted `clear`, which is consistent with genuinely undegraded
+  audio, not a detection failure.
+- **`long_silence_present` vs. a 12.0s threshold.** A smaller diagnostic
+  pass ran Silero VAD directly on the sample and found the longest real
+  acoustic silence gap topped out at 9.9s -- below the production
+  threshold (`vta.vad.LONG_SILENCE_THRESHOLD_S = 12.0`, itself disclosed
+  in §5 as "not fitted") by construction. Not a model failure: an
+  unwinnable comparison. HarperValleyBank is a clean scripted simulation
+  with no genuinely broken/dead-air calls, so it can't supply the
+  positive-class example needed to calibrate this threshold either --
+  still true after this pass, for lack of a corpus that contains one.
+
+**`emotional_tone`'s negative bucket is untestable on this corpus,
+confirmed structural.** A separate free check (150 sessions, transcripts
+only, no audio/API cost) found **zero negative-valence caller turns** in
+the entire sample (37 positive, 113 neutral, 0 negative). HarperValleyBank
+is simulated and non-adversarial; it cannot validate upset/frustrated/
+distressed detection at all, regardless of subset size. IEMOCAP (§2c)
+remains the source for that part of the schema.
+
+**Net effect on production code: none.** This pass changed no thresholds
+and no logic. What it found instead: two of four planned validation axes
+on this dataset were measuring the wrong thing (a threshold-definition
+mismatch, and a ground-truth-semantics mismatch), not evidence of
+overfitting. The two axes that were apples-to-apples (`speaker_overlap_present`,
+and `emotional_tone` restricted to the classes this corpus actually
+contains) are consistent with the accuracy levels measured elsewhere in
+this memo -- moderate, real, and not cherry-picked by dropping
+inconvenient results after the fact (the removed axes are shown above with
+the reasoning, not silently omitted).
+
+### 2g. Real-noise validation for background_noise_* (ESC-50)
+
+`speaker_overlap_present`'s real-audio drop in §2f raised an obvious
+question: do the other synthetic-only numbers hold up against real
+recorded noise, not a programmatic generator? The dataset that would
+answer this properly is VOiCES (SRI/Lab41) -- known distractor type and
+mic distance per recording, objective PESQ/STOI intelligibility scores,
+genuinely better ground truth than anything used so far. It was
+investigated and ruled out: distributed only as monolithic tarballs
+(29.5GB minimum for the devkit, 448GB for the full release), no per-file
+listing on its public S3 bucket, no Hugging Face mirror. There is no way
+to pull a small, low-cost subset the way HarperValleyBank's individual
+files allowed.
+
+The practical middle ground: `scripts/validate_esc50_noise.py` mixes real
+recorded noise (ESC-50, Piczak, CC BY-NC 3.0, 2,000 individually-hosted 5s
+environmental recordings) into 6 HarperValleyBank calls already confirmed
+clean by the §2f diagnostic (caller_mos=5.0, indistinguishable from
+"impaired" calls on every acoustic feature this system uses). Six ESC-50
+categories were chosen for an unambiguous expected mapping onto the
+canonical categories `vta.events_panns` already recognizes: keyboard_typing,
+vacuum_cleaner, wind, car_horn, siren, dog. Mixed at three controlled SNR
+targets (low +18dB, medium +8dB, high -2dB) plus an unmodified control per
+clip. This is real noise, not a synthetic generator -- a genuine upgrade --
+but it is still a constructed mixture, not field-recorded audio; not
+claimed as equivalent to §2f's validation. Entirely local computation
+(PANNs on CPU): zero OpenAI cost, unlike the tone-LLM validations above.
+
+| Field | n | Accuracy | Macro F1 | vs. synthetic benchmark |
+|---|---|---|---|---|
+| `background_noise_present` | 114 | 0.965 | 0.824 | holds up (synthetic: 0.975/0.965) |
+| `background_noise_severity` | 114 | 0.465 | 0.511 | **drops sharply** (synthetic: 0.725/0.711) |
+| `background_noise_type` | 108 | 0.81 exact-match | -- | mostly holds, one systematic failure below |
+
+**`background_noise_severity` is the standout finding here.** Accuracy
+roughly halves against real noise. The root cause is a mismatch in how
+"severity" is constructed versus how it's measured: this experiment
+controls severity via mixing SNR, but the production classifier computes
+severity from `band_deviation` (spectral energy outside the 300-3400Hz
+telephony band) and `occupied_bandwidth_hz` -- a real acoustic property of
+the noise, not something SNR alone predicts. Real environmental sounds
+vary widely in how their energy is distributed across frequency at a
+given loudness (a car horn concentrates energy narrowly; wind spreads it
+broadband), so equal-SNR mixes land in different severity bands
+unpredictably. The synthetic benchmark's higher number likely reflects its
+generator producing noise with more uniform, predictable spectral
+characteristics than real recordings do.
+
+**`background_noise_type`: wind is misclassified as "road noise" in 17 of
+18 cases (94%).** Every other category (keyboard typing, vacuum cleaner,
+car horn, siren, dog) matched at or near 100%. This looks like a genuine
+PANNs/AudioSet weakness rather than a labeling artifact on our side: wind
+noise and vehicle/road noise likely share broadband low-frequency spectral
+characteristics that this system's keyword-matched category buckets
+(`vta.events_panns.CANONICAL_NOISE_CATEGORIES`) don't currently separate
+well. Worth a look if "wind" matters to AutoAce's actual call conditions
+(e.g. mobile customers outdoors); not fixed here since it needs backend
+model investigation, not a threshold tweak.
+
+**Two false positives on truly clean audio (2 of 6 unmodified control
+clips, type predicted as "music").** Small n, but worth disclosing rather
+than omitting: the noise-presence gate isn't perfectly specific on real
+audio, even audio already confirmed clean by an independent acoustic
+check.
+
+**Net effect on production code: none**, same as §2f -- this is a
+diagnostic finding to disclose and prioritize, not yet a fix. The severity
+mismatch in particular would need either a different severity-construction
+methodology or an acoustic re-derivation of the `band_deviation`/
+`occupied_bandwidth_hz` thresholds against real noise recordings, which is
+a bigger undertaking than this pass's scope.
+
 
 ## 3. Cost analysis
 
