@@ -1,4 +1,4 @@
-"""Required output schema for a single analyzed clip (per PROJECT_BRIEF.md §2)."""
+"""Required output schema for a single analyzed clip (per the trial brief §2)."""
 
 from typing import Literal
 

@@ -5,7 +5,7 @@ audio. The frustrated/upset boundary is semantic ("annoyed, impatient,
 dissatisfied *without* strong anger" vs "clearly angry, agitated"), which
 prosody alone cannot resolve (two callers can be acoustically identical
 while one grumbles about a delay and the other demands a refund) -- see
-PLAN.md §3 for why this field is split from the deterministic 7.
+the build plan §3 for why this field is split from the deterministic 7.
 """
 
 import json
@@ -32,7 +32,7 @@ TONE_MAX_COMPLETION_TOKENS = int(
     os.environ.get("VTA_TONE_MAX_COMPLETION_TOKENS", "16000")
 )
 
-# Verbatim from PROJECT_BRIEF.md §2, so the model applies the same
+# Verbatim from the trial brief §2, so the model applies the same
 # definitions the hidden test set will be scored against.
 RUBRIC = """\
 emotional_tone (Enum)

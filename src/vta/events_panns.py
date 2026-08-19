@@ -1,6 +1,6 @@
 """PANNs (CNN14, AudioSet-527) acoustic event tagging -> background noise fields.
 
-Resolved independently of the LLM tone head per PLAN.md's architecture split:
+Resolved independently of the LLM tone head per the build plan's architecture split:
 background noise must never be inferred from poor audio quality or from the
 LLM's read of the transcript, per the brief's explicit warning against
 conflating these signals.

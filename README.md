@@ -12,10 +12,9 @@ short_description: Emotional tone and background-noise analysis for call audio
 # Voice Tone & Background Noise Analyzer
 
 Classifies emotional tone and detects background noise / technical issues in
-call-center audio, per the AutoAce AI technical trial brief. See `PLAN.md`
-for the full design rationale and `TECHNICAL_MEMO.md` for the writeup of
-approaches tested, validation results, cost/latency analysis, and known
-limitations.
+call-center audio, per the AutoAce AI technical trial brief. See
+`TECHNICAL_MEMO.md` for the design rationale and the writeup of approaches
+tested, validation results, cost/latency analysis, and known limitations.
 
 ## Hosted dashboard
 

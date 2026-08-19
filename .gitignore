@@ -41,3 +41,9 @@ docs/*.fls
 docs/*.fdb_latexmk
 docs/*.synctex.gz
 docs/missfont.log
+
+# Internal planning doc and AutoAce's brief (stamped "Confidential Technical
+# Trial"). Neither belongs in a repo that gets handed back or shared -- kept
+# on disk, out of git. Also purged from history, see git log.
+PLAN.md
+PROJECT_BRIEF.md

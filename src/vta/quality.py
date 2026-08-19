@@ -3,7 +3,7 @@
 Technical quality only -- independent of emotional tone and of
 background-noise presence, per the brief's explicit warning against
 conflating the two. Thresholds are a documented heuristic (3 labeled clips,
-all "clear", cannot support fitting) -- see PLAN.md limitations.
+all "clear", cannot support fitting) -- see the build plan limitations.
 """
 
 from vta.dsp_features import DSPFeatures

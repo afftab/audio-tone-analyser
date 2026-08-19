@@ -1,6 +1,6 @@
 """Synthetic validation for the 5 fields that admit ground truth by construction.
 
-Per PLAN.md §6: the 3 provided clips are a smoke test only, not a validation
+Per the build plan §6: the 3 provided clips are a smoke test only, not a validation
 set (too few to produce per-class F1 or a confusion matrix, and any windowing
 of call_003 would put the same call on both sides of a split -- exactly the
 leakage the brief warns against). This generates synthetic audio with known
@@ -8,7 +8,7 @@ ground truth (injected noise/clipping/overlap/silence at controlled levels)
 and reports real accuracy, per-class F1, and confusion matrices against it.
 
 emotional_tone/emotional_intensity are NOT validated here -- they need
-labeled emotional speech (MELD/IEMOCAP per PLAN.md), which requires external
+labeled emotional speech (MELD/IEMOCAP per the build plan), which requires external
 dataset downloads not attempted given the deadline; this is a documented
 limitation, not an oversight.
 

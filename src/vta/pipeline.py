@@ -1,7 +1,7 @@
 """End-to-end per-clip pipeline: audio file -> ClipResult.
 
 Combines the deterministic 7-field acoustic stack with the LLM tone head,
-per PLAN.md's architecture split (technical fields never touch the LLM;
+per the build plan's architecture split (technical fields never touch the LLM;
 tone/intensity never derived from noise/quality heuristics).
 """
 
@@ -198,7 +198,7 @@ def finish_clip_with_tone(
 
     # emotion2vec still votes on confidence, on the neutral/non-neutral split
     # only -- no taxonomy mapping, so it can't reintroduce those errors. The
-    # two values are a documented heuristic, not a fit (PLAN.md §6).
+    # two values are a documented heuristic, not a fit (the build plan §6).
     confidence = 0.82
     if local.emotion_result is not None:
         scored = {k: v for k, v in local.emotion_result.posteriors.items()

@@ -3,7 +3,7 @@
 These features resolve `audio_quality` and `background_noise_severity`
 without any learned model, and feed the emotional_intensity cross-check.
 Windowed (per-second) energy/pitch series are kept, not just scalars, per
-PLAN.md §10 item 3 (a single mean over a long call flattens mid-call escalation).
+the build plan §10 item 3 (a single mean over a long call flattens mid-call escalation).
 """
 
 from dataclasses import dataclass, field

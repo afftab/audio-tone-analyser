@@ -15,7 +15,7 @@ from vta.audio_io import NormalizedAudio
 SILERO_SR = 16_000  # Silero's supported rate; matches our normalization target
 LONG_SILENCE_THRESHOLD_S = 12.0  # gap length past which dead air is "unusually long"
 # Heuristic, not fitted: the 3 clips' longest real gap is 8.9s, all labeled
-# false (see PLAN.md limitations).
+# false (see the build plan limitations).
 
 
 @dataclass
