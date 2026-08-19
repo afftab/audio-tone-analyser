@@ -64,15 +64,6 @@ def _fake_local_analysis() -> LocalAnalysis:
     )
 
 
-@pytest.fixture
-def jobs_module(tmp_path, monkeypatch):
-    from vta import jobs
-    monkeypatch.setattr(jobs, "JOBS_DIR", tmp_path / "jobs")
-    monkeypatch.setattr(jobs, "_JOBS", {})
-    jobs.JOBS_DIR.mkdir(parents=True)
-    return jobs
-
-
 def test_run_job_carries_diagnostics_into_the_file_outcome(jobs_module, tmp_path, monkeypatch):
     jobs = jobs_module
     job_dir = jobs.JOBS_DIR / "j1"

@@ -10,6 +10,30 @@
 
 {% if error %}<div class="alert alert--error" role="alert"><strong>Upload rejected.</strong> {{ error }}</div>{% endif %}
 
+{# Read-only: the cap is VTA_SPEND_CAP_USD in the environment, not a UI control. #}
+<div class="budget{% if budget.exhausted %} budget--spent{% endif %}">
+  <div class="budget__head">
+    <span class="budget__k">API spend cap</span>
+    <span class="budget__v">${{ '%.4f'|format(budget.spent_usd) }}
+      <span class="unit">of ${{ '%.2f'|format(budget.cap_usd) }}</span></span>
+  </div>
+  <div class="budget__track" role="img"
+       aria-label="{{ '%.1f'|format(budget.pct_used) }} percent of the API spend cap used">
+    <span class="budget__fill" style="width: {{ '%.2f'|format(budget.pct_used) }}%"></span>
+  </div>
+  <p class="budget__sub">
+    {% if budget.exhausted %}
+      Cap reached after {{ budget.calls }} call{{ '' if budget.calls == 1 else 's' }}. New
+      batches will still run every local stage, but clips needing the tone model are
+      skipped rather than billed.
+    {% else %}
+      ${{ '%.4f'|format(budget.remaining_usd) }} left across {{ budget.calls }}
+      call{{ '' if budget.calls == 1 else 's' }} so far. Only the tone model bills;
+      every other stage runs locally at no cost.
+    {% endif %}
+  </p>
+</div>
+
 <form method="post" action="/upload" enctype="multipart/form-data" id="upload-form">
   <label class="dropzone" id="dz" for="fi">
     <span class="dropzone__icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>

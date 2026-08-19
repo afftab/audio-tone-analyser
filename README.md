@@ -146,6 +146,35 @@ Generate one with:
 python -c 'import secrets; print(secrets.token_urlsafe(32))'
 ```
 
+## API spend cap
+
+The tone/intensity LLM call is the only paid component, so capping it caps the
+whole API bill. A cumulative ledger at `data/cache/spend_ledger.json` records
+settled spend and is checked before every call:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `VTA_SPEND_CAP_USD` | `5.00` | Total USD this deployment may ever spend |
+| `VTA_RESERVE_PER_CALL_USD` | `0.002` | Headroom held while one call is in flight |
+| `VTA_SPEND_LEDGER` | `data/cache/spend_ledger.json` | Ledger location |
+
+The cap is environment-only and deliberately not editable from the dashboard,
+which shows spent/remaining read-only. Once it is reached, batches still run
+every local stage but clips needing the tone model come back **`skipped`**
+rather than `error` -- nothing failed, the run simply declined to spend. The
+skipped count and reason appear on the job page and in the downloadable
+CSV/JSON.
+
+Workers reserve headroom before calling and settle against the measured cost
+on return, so `VTA_LLM_CONCURRENCY` calls in flight cannot each clear the same
+check and collectively overshoot. A call that raises returns its reservation,
+so failures cost no budget.
+
+The ledger is a file, so it survives restarts -- Compose mounts `vta_data` at
+`/home/user/app/data` to keep it. A bare `docker run` without that volume
+starts every container with a fresh cap. To reset the budget deliberately,
+delete the ledger or raise `VTA_SPEND_CAP_USD`.
+
 ## Data handling
 
 Uploaded audio is written to a per-job directory and processed in-process;

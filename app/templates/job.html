@@ -212,6 +212,7 @@ function renderKpis(files, cost) {
   var box = document.getElementById('kpis');
   var done = files.filter(function (f) { return f.status === 'done'; });
   var errored = files.filter(function (f) { return f.status === 'error'; });
+  var skipped = files.filter(function (f) { return f.status === 'skipped'; });
   var total = files.length;
 
   var maxProc = Math.max.apply(null, files.map(function (f) { return f.processing_s || 0; }).concat([0.001]));
@@ -226,16 +227,19 @@ function renderKpis(files, cost) {
   var throughput = totalProcS > 0 ? totalAudioS / totalProcS : null;
   var audioPct = (totalAudioS + totalProcS) > 0 ? 100 * totalAudioS / (totalAudioS + totalProcS) : 50;
 
-  var progressSub = errored.length
-    ? errored.length + ' error' + (errored.length === 1 ? '' : 's')
-    : (total - done.length - errored.length) + ' remaining';
+  var parts = [];
+  if (errored.length) parts.push(errored.length + ' error' + (errored.length === 1 ? '' : 's'));
+  if (skipped.length) parts.push(skipped.length + ' skipped (spend cap)');
+  var settled = done.length + errored.length + skipped.length;
+  if (settled < total) parts.push((total - settled) + ' remaining');
+  var progressSub = parts.length ? parts.join(' \u00b7 ') : '';
 
   // By hand, not via stat(): these cards need an inline viz slot.
   box.innerHTML =
     '<div class="stat">' +
       '<div class="stat__k">Analyzed</div>' +
       '<div class="stat__v">' + done.length + '<span class="unit">/' + total + '</span></div>' +
-      '<div class="stat__sub">' + (done.length === total ? 'batch complete' : progressSub) + '</div>' +
+      '<div class="stat__sub">' + (progressSub || 'batch complete') + '</div>' +
       '<div class="stat__viz"><div class="microbars">' + bars + '</div></div>' +
     '</div>' +
     '<div class="stat">' +
@@ -408,8 +412,8 @@ function renderAccuracy(done) {
 }
 
 /* ---------------- Table: filter, search, sort, paginate ---------------- */
-var TAB_ORDER = ['all', 'done', 'processing', 'pending', 'error'];
-var TAB_LABEL = { all: 'All', done: 'Done', processing: 'Processing', pending: 'Pending', error: 'Error' };
+var TAB_ORDER = ['all', 'done', 'processing', 'pending', 'error', 'skipped'];
+var TAB_LABEL = { all: 'All', done: 'Done', processing: 'Processing', pending: 'Pending', error: 'Error', skipped: 'Skipped' };
 
 function renderTabs(files) {
   var counts = { all: files.length };

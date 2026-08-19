@@ -24,6 +24,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from vta.budget import LEDGER, BudgetExhausted
 from vta.pipeline import LocalAnalysis, analyze_clip_local, finish_clip_with_tone
 from vta.pricing import ClipCost, batch_totals, clip_cost_breakdown
 from vta.tone_llm import classify_tone
@@ -60,7 +61,7 @@ class UploadTooLarge(Exception):
 @dataclass
 class FileOutcome:
     name: str
-    status: str  # "pending" | "processing" | "done" | "error"
+    status: str  # "pending" | "processing" | "done" | "error" | "skipped"
     result: dict | None = None
     error: str | None = None
     expected: dict | None = None  # from CSV result_json column, if provided
@@ -86,7 +87,7 @@ class Job:
 
     def summary(self) -> dict:
         with self._lock:
-            counts = {"pending": 0, "processing": 0, "done": 0, "error": 0}
+            counts = {"pending": 0, "processing": 0, "done": 0, "error": 0, "skipped": 0}
             for f in self.files.values():
                 counts[f.status] += 1
             costs = [
@@ -101,6 +102,7 @@ class Job:
                 "counts": counts,
                 "total": len(self.files),
                 "cost": batch_totals(costs),
+                "budget": LEDGER.state().as_dict(),
                 "files": [asdict(f) for f in self.files.values()],
             }
 
@@ -307,10 +309,22 @@ def _run_job(job_id: str, job_dir: Path) -> None:
     # network I/O, so no CPU-oversubscription concern here.
     def _call_llm(name: str):
         local = locals_by_name[name]
+        if not LEDGER.reserve():
+            state = LEDGER.state()
+            raise BudgetExhausted(
+                f"Spend cap reached: ${state.spent_usd:.4f} of ${state.cap_usd:.2f} "
+                f"used across {state.calls} calls. No API call was made for this "
+                "clip. Raise VTA_SPEND_CAP_USD to continue."
+            )
         t0 = time.perf_counter()
-        tone_judgment, token_usage = classify_tone(
-            local.tone_transcript, local.prosody, local.per_speaker_prosody
-        )
+        try:
+            tone_judgment, token_usage = classify_tone(
+                local.tone_transcript, local.prosody, local.per_speaker_prosody
+            )
+        except Exception:
+            LEDGER.release()  # a failed call must not consume budget
+            raise
+        LEDGER.settle(clip_cost_breakdown(token_usage).total_usd)
         return tone_judgment, token_usage, time.perf_counter() - t0
 
     if locals_by_name:
@@ -336,6 +350,12 @@ def _run_job(job_id: str, job_dir: Path) -> None:
                         outcome.token_usage = asdict(analysis.diagnostics.llm_token_usage)
                         outcome.cost_breakdown = asdict(breakdown)
                         outcome.status = "done"
+                except BudgetExhausted as e:
+                    # Not a failure of this clip -- the batch ran out of budget.
+                    # No traceback: the message is the whole story.
+                    with job._lock:
+                        outcome.status = "skipped"
+                        outcome.error = str(e)
                 except Exception as e:  # noqa: BLE001 -- one bad file must not fail the batch
                     with job._lock:
                         outcome.status = "error"
@@ -391,4 +411,7 @@ def results_json(job: Job) -> str:
             if f.cost_usd is not None and f.audio_s is not None
         ]
         files = {name: asdict(outcome) for name, outcome in job.files.items()}
-    return json.dumps({"cost": batch_totals(costs), "files": files}, indent=2)
+    return json.dumps(
+        {"cost": batch_totals(costs), "budget": LEDGER.state().as_dict(), "files": files},
+        indent=2,
+    )

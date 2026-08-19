@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+from vta import budget
 from vta.config import (
     DASHBOARD_PASSWORD,
     DASHBOARD_USERNAME,
@@ -182,7 +183,9 @@ def logout(request: Request):
 def index(request: Request):
     if not _is_authed(request):
         return RedirectResponse("/login", status_code=303)
-    return templates.TemplateResponse(request, "index.html", {})
+    return templates.TemplateResponse(
+        request, "index.html", {"budget": budget.LEDGER.state()}
+    )
 
 
 _PAGES_LOCK = threading.Lock()
