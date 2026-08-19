@@ -162,7 +162,7 @@ VowelPrompt (published SOTA) & 51.2\% & 62.3\% \\
 \end{tabular}
 \end{table}
 
-Two cautions bound that comparison. IEMOCAP's own labelers agree only 27--48\% of the time (Fleiss' $\kappa$), a ceiling no system on this benchmark exceeds. Our label set is also harder than the published one, because it separates \texttt{frustrated} from \texttt{upset} by degree of anger alone, the axis the literature identifies as hardest.
+Two cautions bound that comparison. IEMOCAP's inter-annotator agreement is Fleiss' $\kappa$ 0.27 across all classes and 0.48 on the four main ones, which is fair at best and caps every system evaluated against these labels. Our label set is also harder than the published one, because it separates \texttt{frustrated} from \texttt{upset} by degree of anger alone, the axis the literature identifies as hardest.
 
 \subsection{Noise: where it gets confused}
 
@@ -211,9 +211,10 @@ Weighted average cost is \$0.00036 per audio-minute, 12\% of the ceiling, on Ope
 \begin{thebibliography}{9}
 \small
 \bibitem{vw} Wang, Y., et al. VowelPrompt: Hearing speech emotions from text via vowel-level prosodic augmentation. \emph{arXiv:2602.06270}, 2026.
+\bibitem{scl} Wu, Z., et al. Beyond silent letters: Amplifying LLMs in emotion recognition with vocal nuances. \emph{arXiv:2407.21315}, 2024.
 \bibitem{iemocap} Busso, C., et al. IEMOCAP: Interactive emotional dyadic motion capture database. \emph{Language Resources and Evaluation} 42(4), 2008.
 \bibitem{esc50} Piczak, K.~J. ESC: Dataset for environmental sound classification. \emph{Proc.\ ACM Multimedia}, 2015.
-\bibitem{hvb} Zhu, S., et al. HarperValleyBank: A motivated domain specific corpus for human-robot dialog. \emph{arXiv:2010.02987}, 2021.
+\bibitem{hvb} Wu, M., Nafziger, J., Scodary, A., and Maas, A. HarperValleyBank: A domain-specific spoken dialog corpus. \emph{arXiv:2010.13929}, 2020.
 \end{thebibliography}
 
 \end{document}
