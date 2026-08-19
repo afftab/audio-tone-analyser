@@ -19,6 +19,12 @@ def _reload_config(monkeypatch, **env):
             monkeypatch.delenv(k, raising=False)
         else:
             monkeypatch.setenv(k, v)
+    # config.py calls load_dotenv() at import time, which would otherwise
+    # re-source the developer's real local .env on reload -- undoing the
+    # delenv above and making this test depend on what happens to be on
+    # disk. Tests must be hermetic to that.
+    import dotenv
+    monkeypatch.setattr(dotenv, "load_dotenv", lambda *a, **k: False)
     import vta.config
 
     return importlib.reload(vta.config)

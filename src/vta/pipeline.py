@@ -13,13 +13,13 @@ from vta.asr import transcribe
 from vta.audio_io import load_normalized
 from vta.diarize import diarize, speaker_audio
 from vta.dsp_features import compute_dsp_features
-from vta.emotion_head import classify_emotion
-from vta.events_panns import detect_background_noise
-from vta.overlap_pyannote import detect_overlap
+from vta.emotion_head import EmotionResult, classify_emotion
+from vta.events_panns import NoiseResult, detect_background_noise
+from vta.overlap_pyannote import OverlapResult, detect_overlap
 from vta.quality import classify_audio_quality
 from vta.schema import ClipResult
-from vta.tone_llm import ProsodySummary, TokenUsage, classify_tone
-from vta.vad import run_vad
+from vta.tone_llm import ProsodySummary, TokenUsage, ToneJudgment, classify_tone
+from vta.vad import VadResult, run_vad
 
 # The old emotion2vec->schema tone override was removed (see analyze_clip);
 # posteriors still reach the LLM as context but no longer set the label.
@@ -41,6 +41,29 @@ class AnalysisResult:
     diagnostics: PipelineDiagnostics
 
 
+@dataclass
+class LocalAnalysis:
+    """Everything analyze_clip computes before the LLM tone call. Split out
+    so a batch of clips can run this part sequentially (it's CPU-bound and
+    the local models are already internally multithreaded -- running many
+    at once would oversubscribe the same cores, not speed anything up) while
+    the LLM call, which is pure network I/O, runs concurrently across the
+    batch instead. See jobs._run_job and TECHNICAL_MEMO.md §5."""
+
+    t_start: float
+    local_elapsed_s: float
+    duration_s: float
+    tone_transcript: str
+    prosody: ProsodySummary
+    per_speaker_prosody: dict[str, ProsodySummary] | None
+    emotion_result: EmotionResult | None
+    noise_result: NoiseResult
+    overlap_result: OverlapResult
+    vad_result: VadResult
+    audio_quality: str
+    timings: dict[str, float]
+
+
 def _timed(fn, *args, **kwargs):
     # perf_counter, not time(): wall-clock can step backwards under an NTP
     # adjustment and these are durations, not timestamps.
@@ -50,6 +73,18 @@ def _timed(fn, *args, **kwargs):
 
 
 def analyze_clip(path: Path) -> AnalysisResult:
+    """Single-clip convenience wrapper: local stages then the LLM call, in
+    one call. Batch processing uses analyze_clip_local + classify_tone +
+    finish_clip_with_tone directly instead, to run the LLM calls
+    concurrently across a batch (see jobs._run_job)."""
+    local = analyze_clip_local(path)
+    (tone_judgment, token_usage), llm_s = _timed(
+        classify_tone, local.tone_transcript, local.prosody, local.per_speaker_prosody or None
+    )
+    return finish_clip_with_tone(local, tone_judgment, token_usage, llm_s)
+
+
+def analyze_clip_local(path: Path) -> LocalAnalysis:
     t_start = time.perf_counter()
     timings: dict[str, float] = {}
 
@@ -128,9 +163,33 @@ def analyze_clip(path: Path) -> AnalysisResult:
             )
     timings["per_speaker_prosody"] = time.perf_counter() - t_ps
 
-    (tone_judgment, token_usage), timings["llm_tone"] = _timed(
-        classify_tone, tone_transcript, prosody, per_speaker_prosody or None
+    return LocalAnalysis(
+        t_start=t_start,
+        local_elapsed_s=time.perf_counter() - t_start,
+        duration_s=audio.duration_s,
+        tone_transcript=tone_transcript,
+        prosody=prosody,
+        per_speaker_prosody=per_speaker_prosody or None,
+        emotion_result=emotion_result,
+        noise_result=noise_result,
+        overlap_result=overlap_result,
+        vad_result=vad_result,
+        audio_quality=audio_quality,
+        timings=timings,
     )
+
+
+def finish_clip_with_tone(
+    local: LocalAnalysis,
+    tone_judgment: ToneJudgment,
+    token_usage: TokenUsage,
+    llm_timing_s: float,
+) -> AnalysisResult:
+    """Combines LocalAnalysis with the (possibly concurrently-run) LLM tone
+    result. Split from analyze_clip_local so a batch can run the LLM calls
+    for many clips at once -- see jobs._run_job."""
+    timings = dict(local.timings)
+    timings["llm_tone"] = llm_timing_s
 
     # Taken as final: both acoustic post-corrections tried were removed
     # (see TECHNICAL_MEMO.md §2c).
@@ -141,8 +200,8 @@ def analyze_clip(path: Path) -> AnalysisResult:
     # only -- no taxonomy mapping, so it can't reintroduce those errors. The
     # two values are a documented heuristic, not a fit (PLAN.md §6).
     confidence = 0.82
-    if emotion_result is not None:
-        scored = {k: v for k, v in emotion_result.posteriors.items()
+    if local.emotion_result is not None:
+        scored = {k: v for k, v in local.emotion_result.posteriors.items()
                   if k not in ("unknown", "other")}
         if scored:
             acoustic_neutral = max(scored, key=scored.get) == "neutral"
@@ -152,19 +211,23 @@ def analyze_clip(path: Path) -> AnalysisResult:
     clip_result = ClipResult(
         emotional_tone=tone,
         emotional_intensity=intensity,
-        background_noise_present=noise_result.background_noise_present,
-        background_noise_type=noise_result.background_noise_type,
-        background_noise_severity=noise_result.background_noise_severity,
-        audio_quality=audio_quality,
-        speaker_overlap_present=overlap_result.speaker_overlap_present,
-        long_silence_present=vad_result.long_silence_present,
+        background_noise_present=local.noise_result.background_noise_present,
+        background_noise_type=local.noise_result.background_noise_type,
+        background_noise_severity=local.noise_result.background_noise_severity,
+        audio_quality=local.audio_quality,
+        speaker_overlap_present=local.overlap_result.speaker_overlap_present,
+        long_silence_present=local.vad_result.long_silence_present,
         confidence=confidence,
     )
 
     diagnostics = PipelineDiagnostics(
-        duration_s=audio.duration_s,
-        processing_s=time.perf_counter() - t_start,
-        transcript=tone_transcript,
+        duration_s=local.duration_s,
+        # Sum of actual work (local phase + this LLM call), not wall-clock
+        # since local.t_start -- in a batch, the LLM calls for several clips
+        # run concurrently, so wall-clock-since-start would double-count
+        # queueing time as if it were this clip's own processing time.
+        processing_s=local.local_elapsed_s + llm_timing_s,
+        transcript=local.tone_transcript,
         llm_reasoning=" | ".join(
             [
                 f"[lexical] {tone_judgment.step1_lexical_evidence}",

@@ -20,11 +20,13 @@ import time
 import traceback
 import uuid
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from vta.pipeline import analyze_clip
+from vta.pipeline import LocalAnalysis, analyze_clip_local, finish_clip_with_tone
 from vta.pricing import ClipCost, batch_totals, clip_cost_breakdown
+from vta.tone_llm import classify_tone
 
 SUPPORTED_EXTENSIONS = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".opus"}
 
@@ -41,6 +43,14 @@ MAX_FILES_PER_BATCH = int(os.environ.get("VTA_MAX_FILES", "500"))
 # --- Retention ---
 RETENTION_S = float(os.environ.get("VTA_JOB_RETENTION_S", str(6 * 3600)))
 MAX_RETAINED_JOBS = int(os.environ.get("VTA_MAX_RETAINED_JOBS", "20"))
+
+# --- Concurrency ---
+# Local stages (ASR, emotion2vec, PANNs, pyannote) are already internally
+# multithreaded across all CPU cores per clip -- running several clips'
+# local stages at once would oversubscribe the same cores, not speed
+# anything up, so those stay sequential. The LLM tone call is pure network
+# I/O with no such ceiling, so it runs concurrently across the batch.
+LLM_CONCURRENCY = int(os.environ.get("VTA_LLM_CONCURRENCY", "8"))
 
 
 class UploadTooLarge(Exception):
@@ -276,29 +286,60 @@ def _run_job(job_id: str, job_dir: Path) -> None:
     if job is None:
         return
 
+    locals_by_name: dict[str, LocalAnalysis] = {}
+
+    # Phase 1: local (CPU-bound) stages, strictly sequential -- see
+    # LLM_CONCURRENCY's comment for why these don't parallelize.
     for name, outcome in list(job.files.items()):
-        # Lock the field writes only, never analyze_clip: summary() takes
-        # the same lock to serve the poller, and a clip takes tens of seconds.
+        # Lock the field writes only, never the pipeline call itself:
+        # summary() takes the same lock to serve the poller, and a clip
+        # takes tens of seconds.
         with job._lock:
             outcome.status = "processing"
         try:
-            analysis = analyze_clip(job_dir / name)
-            breakdown = clip_cost_breakdown(analysis.diagnostics.llm_token_usage)
-            with job._lock:
-                outcome.result = analysis.result.model_dump()
-                outcome.processing_s = analysis.diagnostics.processing_s
-                outcome.audio_s = analysis.diagnostics.duration_s
-                outcome.cost_usd = breakdown.total_usd
-                outcome.stage_timings_s = analysis.diagnostics.stage_timings_s
-                outcome.transcript = analysis.diagnostics.transcript
-                outcome.llm_reasoning = analysis.diagnostics.llm_reasoning
-                outcome.token_usage = asdict(analysis.diagnostics.llm_token_usage)
-                outcome.cost_breakdown = asdict(breakdown)
-                outcome.status = "done"
+            locals_by_name[name] = analyze_clip_local(job_dir / name)
         except Exception as e:  # noqa: BLE001 -- one bad file must not fail the batch
             with job._lock:
                 outcome.status = "error"
                 outcome.error = f"{type(e).__name__}: {e}\n{traceback.format_exc()[-1500:]}"
+
+    # Phase 2: the LLM tone call, concurrent across the batch -- pure
+    # network I/O, so no CPU-oversubscription concern here.
+    def _call_llm(name: str):
+        local = locals_by_name[name]
+        t0 = time.perf_counter()
+        tone_judgment, token_usage = classify_tone(
+            local.tone_transcript, local.prosody, local.per_speaker_prosody
+        )
+        return tone_judgment, token_usage, time.perf_counter() - t0
+
+    if locals_by_name:
+        with ThreadPoolExecutor(max_workers=min(LLM_CONCURRENCY, len(locals_by_name))) as pool:
+            futures = {pool.submit(_call_llm, name): name for name in locals_by_name}
+            for future in as_completed(futures):
+                name = futures[future]
+                outcome = job.files[name]
+                try:
+                    tone_judgment, token_usage, llm_s = future.result()
+                    analysis = finish_clip_with_tone(
+                        locals_by_name[name], tone_judgment, token_usage, llm_s
+                    )
+                    breakdown = clip_cost_breakdown(analysis.diagnostics.llm_token_usage)
+                    with job._lock:
+                        outcome.result = analysis.result.model_dump()
+                        outcome.processing_s = analysis.diagnostics.processing_s
+                        outcome.audio_s = analysis.diagnostics.duration_s
+                        outcome.cost_usd = breakdown.total_usd
+                        outcome.stage_timings_s = analysis.diagnostics.stage_timings_s
+                        outcome.transcript = analysis.diagnostics.transcript
+                        outcome.llm_reasoning = analysis.diagnostics.llm_reasoning
+                        outcome.token_usage = asdict(analysis.diagnostics.llm_token_usage)
+                        outcome.cost_breakdown = asdict(breakdown)
+                        outcome.status = "done"
+                except Exception as e:  # noqa: BLE001 -- one bad file must not fail the batch
+                    with job._lock:
+                        outcome.status = "error"
+                        outcome.error = f"{type(e).__name__}: {e}\n{traceback.format_exc()[-1500:]}"
 
     with job._lock:
         job.status = "done"
