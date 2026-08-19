@@ -2,7 +2,7 @@ FROM python:3.11-slim AS base
 
 # --- Root-only setup: system packages and the uv binary ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg curl \
+    ffmpeg curl poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

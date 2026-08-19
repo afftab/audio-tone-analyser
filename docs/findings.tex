@@ -1,0 +1,219 @@
+% Validation findings -- single-column research-report format.
+% This is the single source of truth for the /findings report:
+%   xelatex findings.tex (x2)  ->  findings.pdf  ->  embedded at /findings.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\setmainfont{Charter}
+\setmonofont{Menlo}[Scale=0.88]
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+
+\definecolor{ink}{HTML}{000000}
+\definecolor{ink2}{HTML}{000000}
+\definecolor{ink3}{HTML}{000000}
+\definecolor{linecol}{HTML}{D4D4D8}
+\definecolor{accent}{HTML}{000000}
+\definecolor{pass}{HTML}{000000}
+\definecolor{fail}{HTML}{000000}
+\definecolor{warn}{HTML}{000000}
+\definecolor{cma}{HTML}{000000}
+\color{ink}
+
+% ---------- page furniture ----------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\scriptsize\color{ink2}\texttt{parakeet-tdt-0.6b-v2} \textperiodcentered\ \texttt{emotion2vec+ large} \textperiodcentered\ \texttt{PANNs CNN14} \textperiodcentered\ \texttt{pyannote segmentation-3.0} \textperiodcentered\ \texttt{gpt-5.6-luna}}
+\fancyfoot[R]{\scriptsize\thepage}
+
+% ---------- section typography ----------
+\titleformat{\section}{\large\bfseries\color{ink}}{\thesection.}{0.55em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titleformat{\subsection}{\normalsize\bfseries\color{ink}}{\thesubsection}{0.55em}{}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+% ---------- tables ----------
+\captionsetup{font=small, labelfont=bf, skip=7pt, justification=raggedright, singlelinecheck=false}
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{5pt}
+
+% Verdict labels for the field-by-field table.
+\newcommand{\holds}{\textbullet~holds}
+\newcommand{\drops}{\textbullet~drops}
+\newcommand{\partiallabel}{\textbullet~mostly holds}
+\newcommand{\unknownlabel}{\textbullet~unconfirmed}
+
+\hypersetup{colorlinks=true, linkcolor=ink, urlcolor=ink, citecolor=ink}
+
+\begin{document}
+
+% ---------- title block ----------
+\begin{center}
+{\LARGE\bfseries Validation of a Voice-Tone and Background-Noise Analyzer\\[3pt] on Production Call Audio}\\[7pt]
+{\small\itshape\color{ink} Validation report \textperiodcentered\ AutoAce AI technical trial}
+\end{center}
+\vspace{2pt}
+\noindent{\color{linecol}\rule{\textwidth}{0.6pt}}
+\vspace{4pt}
+
+% ---------- abstract ----------
+\begin{center}\small\bfseries Abstract\end{center}
+\small
+\noindent\hspace{1.5em}A voice-tone and background-noise analyzer emits nine fields per call. This report asks which of them survive contact with real call audio, and every number below is measured on real recordings rather than on the lab-generated audio used during development. Four sources supply the evidence: 30 HarperValleyBank customer-service calls, 114 mixes of ESC-50 environmental noise into confirmed-clean speech at controlled signal-to-noise ratios, 150 IEMOCAP utterances used only for confusion analysis, and the three labeled clips provided with this trial. Two fields hold against real audio, one mostly holds, two drop, and four are unconfirmed. Background-noise detection holds at 96.5\% accuracy and 0.82 F1, and noise-type identification mostly holds at 80.6\% exact match. Emotional tone holds at 0.49 macro-F1, level with published prompt-based systems but short of production confidence. Speaker-overlap detection and noise-severity rating both drop, to 60\% and 46.5\% from 80\% and 72.5\% on synthetic benchmarks, and neither regression has been root-caused. The unconfirmed four include \texttt{audio\_quality} and \texttt{long\_\allowbreak silence\_\allowbreak present}, for which no real-audio label was available, and \texttt{confidence}, which cannot be calibrated while all three provided clips share one value. The pipeline runs at \$0.00036 per audio-minute, 12\% of the \$0.003 ceiling, and at 0.14--0.62$\times$ realtime single-threaded on CPU.
+\normalsize
+
+\noindent{\color{linecol}\rule{\textwidth}{0.4pt}}
+
+\section{Evidence base}
+
+Every number in this report comes from one of the four sources in Table~\ref{tab:evidence}. Where a field has no real-audio check, it is marked \emph{unconfirmed} rather than backed by a synthetic estimate.
+
+\begin{table}[htbp]
+\centering
+\caption{Real-audio evidence base.}
+\label{tab:evidence}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{4.9cm} >{\raggedright\arraybackslash}p{4.5cm} >{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+\textbf{Source} & \textbf{What it is} & \textbf{Fields it checks} & \textbf{Sample} \\
+\midrule
+HarperValleyBank & Real customer-service calls, US bank & \texttt{emotional\_tone} (coarse), \texttt{speaker\_\allowbreak overlap\_\allowbreak present} & 30 of 1,446 calls (seed 1234) \\
+ESC-50 $\times$ clean speech & Real environmental noise mixed into confirmed-clean speech at controlled SNRs & \texttt{background\_\allowbreak noise\_\allowbreak present}, \texttt{\_severity}, \texttt{\_type} & 114 mixes (type: 108) \\
+IEMOCAP & Acted emotional speech, five classes & \texttt{emotional\_tone}, \texttt{emotional\_\allowbreak intensity} (confusion analysis only, not an accuracy claim) & 150 utterances \\
+Provided production calls & The three labeled clips from this trial & all fields & 3 clips \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Results by field}
+
+Table~\ref{tab:fields} reports, for every field in the output schema, the real-audio check (the production-relevant result), the development-time benchmark, and the verdict.
+
+\begin{table}[htbp]
+\centering
+\caption{Field-by-field results: real-audio check versus development benchmark. Verdicts: \holds\ (real audio confirms the field), \partiallabel, \drops\ (real audio contradicts it), \unknownlabel\ (no real-audio evidence either way).}
+\label{tab:fields}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{4.9cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Real-audio check} & \textbf{Benchmark} & \textbf{Verdict} \\
+\midrule
+\texttt{emotional\_tone} (pos/neu) & 60\% / 0.49 F1 \, real bank calls, n=30 & 0.49 macro-F1 \, IEMOCAP, n=150 & \holds \\
+\texttt{emotional\_\allowbreak intensity} & no source (2/3 on the provided clips) & 0.47 / 0.41 F1 \, IEMOCAP, n=150 & \unknownlabel \\
+\texttt{speaker\_\allowbreak overlap\_\allowbreak present} & 60\% / 0.58 F1 \, real calls, n=30 & 80\% / 0.79 F1 \, synthetic & \drops \\
+\texttt{background\_\allowbreak noise\_\allowbreak present} & 96.5\% / 0.82 F1 \, ESC-50 mixes, n=114 & 97.5\% / 0.97 F1 \, synthetic & \holds \\
+\texttt{background\_\allowbreak noise\_\allowbreak type} & 80.6\% exact match \, ESC-50, n=108 & --- & \partiallabel \\
+\texttt{background\_\allowbreak noise\_\allowbreak severity} & 46.5\% / 0.51 F1 \, ESC-50 mixes, n=114 & 72.5\% / 0.71 F1 \, synthetic & \drops \\
+\texttt{audio\_quality} & no real-audio label available & 93.3\% / 0.93 F1 \, synthetic & \unknownlabel \\
+\texttt{long\_\allowbreak silence\_\allowbreak present} & no real-audio label available & 95\% / 0.95 F1 \, synthetic & \unknownlabel \\
+\texttt{confidence} & uncalibratable (3 labels share one value) & --- & \unknownlabel \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Tone: where it gets confused}
+
+Thirty real calls cannot support a confusion matrix. At that sample size it is mostly noise. To see \emph{how} tone predictions miss, the system was run on IEMOCAP, a public five-class acted-speech benchmark, purely to observe which emotion pairs get confused and how that compares with published research. This is not a claim about real-call accuracy. The real-call numbers are those in Table~\ref{tab:fields}. Accuracy 0.493, macro-F1 0.494, n=150 (0.45 $\pm$ 0.03 macro-F1 across five seeds).
+
+\begin{table}[htbp]
+\centering
+\caption{Confusion matrix for \texttt{emotional\_tone} on IEMOCAP (n=150).}
+\label{tab:cm}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{r|ccccc}
+ & \multicolumn{5}{c}{\textbf{Predicted}} \\
+\textbf{Actual} & Neutral & Satisfied & Frustrated & Upset & Distressed \\
+\hline
+Neutral & \textbf{18} & 1 & 9 & 2 & 0 \\
+Satisfied & 9 & \textbf{11} & 5 & 3 & 2 \\
+Frustrated & 4 & 2 & \textbf{16} & 7 & 1 \\
+Upset & 0 & 1 & 7 & \textbf{18} & 4 \\
+Distressed & 13 & 0 & 6 & 0 & \textbf{11} \\
+\end{tabular}
+
+{\footnotesize\itshape Rows are actual class. Columns are predicted class. Bold diagonal denotes correct predictions.}
+\end{table}
+
+\texttt{frustrated} and \texttt{upset} are most often confused with each other and with \texttt{neutral}, the weakest boundary in the label set (per-class F1 0.44 and 0.60). Table~\ref{tab:published} positions this system against the closest published result.
+
+\begin{table}[htbp]
+\centering
+\caption{Positioning against published IEMOCAP results (unweighted accuracy).}
+\label{tab:published}
+\begin{tabular}{@{}l rr@{}}
+\toprule
+\textbf{System} & \textbf{Transcript only} & \textbf{+ Context} \\
+\midrule
+Zero-shot baseline & 43.4\% & 55.5\% \\
+SpeechCueLLM & 50.0\% & 60.1\% \\
+VowelPrompt (published SOTA) & 51.2\% & 62.3\% \\
+\textbf{This system} & \textbf{50.0\%} & \textbf{55.7\%} (54.7--56.7) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two cautions bound that comparison. IEMOCAP's own labelers agree only 27--48\% of the time (Fleiss' $\kappa$), a ceiling no system on this benchmark exceeds. Our label set is also harder than the published one, because it separates \texttt{frustrated} from \texttt{upset} by degree of anger alone, the axis the literature identifies as hardest.
+
+\subsection{Noise: where it gets confused}
+
+One confusion is specific and explainable: \texttt{wind} is misclassified as road noise in 17 of 18 cases (94\%). This is most likely a limitation of the upstream PANNs/AudioSet classifier rather than an error introduced by this pipeline. It is worth attention if wind matters to AutoAce's real call conditions.
+
+The severity regression is less understood. Severity thresholds were calibrated on synthetic seed-1234 audio, which likely produces more acoustically uniform noise than real recordings provide. That calibration mismatch is the leading suspect for the 46.5\% real-audio score, but it has not been root-caused.
+
+\subsection{The three provided calls}
+
+Tone matched on 1 of the 3 provided clips under every configuration tested, and \texttt{emotional\_\allowbreak intensity} matched on 2 of 3. Three clips cannot confirm or refute anything, since each clip is worth 33 percentage points, but the result is reported because it is the only check on the exact audio this trial will be evaluated on.
+
+\section{Cost and latency}
+
+Table~\ref{tab:cost} reports cost and wall-clock processing, measured end to end on the three provided clips.
+
+\begin{table}[htbp]
+\centering
+\caption{Cost and latency on the provided clips.}
+\label{tab:cost}
+\begin{tabular}{@{}l rrrrr@{}}
+\toprule
+\textbf{Clip} & \textbf{Duration} & \textbf{Cost} & \textbf{\$/audio-min} & \textbf{Processing} & \textbf{$\times$ realtime} \\
+\midrule
+call\_001 & 30.9\,s & \$0.000464 & \$0.00090 & 19.2\,s & 0.62$\times$ \\
+call\_002 & 35.0\,s & \$0.000339 & \$0.00058 & 5.9\,s & 0.17$\times$ \\
+call\_003 & 171.9\,s & \$0.000616 & \$0.00022 & 23.4\,s & 0.14$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Weighted average cost is \$0.00036 per audio-minute, 12\% of the ceiling, on OpenAI \texttt{gpt-5.6-luna} at \$0.20 / \$1.20 per million input/output tokens and \$0.02 per million cached input tokens. Only transcript text and numeric acoustic features are transmitted to that endpoint, and audio never leaves this infrastructure. Batch LLM calls run concurrently (1.64$\times$ measured wall-time speedup, n=8). Every other pipeline stage runs locally at no marginal cost.
+
+\section{Limitations and next steps}
+
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+\item \texttt{speaker\_\allowbreak overlap\_\allowbreak present} and \texttt{background\_\allowbreak noise\_\allowbreak severity} are the two weakest real-audio results and neither regression is root-caused. Next: sweep the overlap decision threshold on real calls, and recalibrate severity thresholds against the real ESC-50 mixtures rather than synthetic audio.
+\item \texttt{audio\_quality} and \texttt{long\_\allowbreak silence\_\allowbreak present} have no real-audio check at all. The only candidate label for \texttt{audio\_quality} (call intelligibility) measures a different construct, and no dataset on hand contains genuine dead-air calls. Next: source real labels, or redefine the fields against a label that can be obtained.
+\item \texttt{confidence} is an uncalibrated placeholder with nothing to calibrate against. Next: calibrate as soon as more than three labeled calls exist.
+\item Sample sizes are small: 3 clips, 30 calls, 114--150 mixes or utterances. These numbers describe this evaluation, not a statistically confident estimate of production performance.
+\item The \texttt{frustrated}/\texttt{upset} boundary is the axis this system and the published literature both find hardest, and is where tone accuracy is most improvable.
+\end{itemize}
+
+\section*{Data and code availability}
+\noindent Every result here is reproduced by the scripts in \texttt{scripts/} from the JSON artifacts in the repository root. Full methodology, covering validation design, ablations, seed replication, and the evidence behind every number, is in \texttt{TECHNICAL\_MEMO.md} and \texttt{PLAN.md}.
+
+\begin{thebibliography}{9}
+\small
+\bibitem{vw} Wang, Y., et al. VowelPrompt: Hearing speech emotions from text via vowel-level prosodic augmentation. \emph{arXiv:2602.06270}, 2026.
+\bibitem{iemocap} Busso, C., et al. IEMOCAP: Interactive emotional dyadic motion capture database. \emph{Language Resources and Evaluation} 42(4), 2008.
+\bibitem{esc50} Piczak, K.~J. ESC: Dataset for environmental sound classification. \emph{Proc.\ ACM Multimedia}, 2015.
+\bibitem{hvb} Zhu, S., et al. HarperValleyBank: A motivated domain specific corpus for human-robot dialog. \emph{arXiv:2010.02987}, 2021.
+\end{thebibliography}
+
+\end{document}

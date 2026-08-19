@@ -88,6 +88,24 @@ uv run python scripts/generate_predictions.py   # the 3 provided calls -> predic
 uv run python scripts/validate_synthetic.py     # synthetic validation -> validation_results.json
 ```
 
+## Findings report
+
+`docs/findings.tex` is the single source of truth for the validation report: a
+single-column research-report document (abstract, numbered sections, captioned tables,
+references). The `/findings` dashboard page embeds the compiled `docs/findings.pdf`
+directly, and `/findings.pdf` serves the same file for download -- there is no separate
+HTML/markdown rendering of the report. After changing any reported number, regenerate
+the PDF:
+
+```bash
+cd docs && xelatex -interaction=nonstopmode findings.tex && xelatex -interaction=nonstopmode findings.tex
+```
+
+(Two passes settle table/reference layout. Requires a LaTeX distribution with `fontspec` --
+MacTeX/TeX Live; `xelatex` specifically, since the document uses system fonts via `fontspec`
+-- `Charter` (body) and `Menlo` (code), both standard on macOS. On Linux, install equivalents
+or swap in a bundled LaTeX font package instead.)
+
 ## Deployment (Docker)
 
 The build needs read access to the gated `pyannote/segmentation-3.0` model,
@@ -144,6 +162,6 @@ separately at `VTA_MAX_EXTRACTED_MB` (1024).
 
 Validation artifacts (`validation_results*.json`, sweep logs) are gitignored:
 they embed verbatim IEMOCAP reference transcripts, which that corpus's
-licence does not permit redistributing. `.github/workflows/sync-to-hub.yml`
-re-checks this before pushing to a public Space and fails the deploy if any
-such file, or any audio, is tracked.
+licence does not permit redistributing. Production-call audio is gitignored
+for the same reason (brief §5). Check `git status` before committing if you
+regenerate either.

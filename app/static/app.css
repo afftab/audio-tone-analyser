@@ -665,89 +665,20 @@ tr.detail-row .detail-grid {
 .pager button:disabled { opacity: .35; cursor: default; }
 .pager__pos { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* ---------------- Findings page ----------------
-   One rhythm rule per nesting level, no per-instance inline margins:
-   - between sections: .findings-section margin-top
-   - within a section: > * + * below
-   - within a panel: .panel__head already carries margin-bottom (app-wide);
-     anything after that is its own sibling rule, listed with the rest. */
-.findings-section { margin-top: var(--s6); }
-.findings-section:first-of-type { margin-top: var(--s5); }
-.findings-section > * + * { margin-top: var(--s4); }
-.findings-section h2 {
-  font-size: 1rem; font-weight: 650; letter-spacing: -.01em; margin-bottom: var(--s1);
+/* Findings: the compiled report rendered as plain page images -- no PDF
+   viewer chrome, no thumbnail sidebar, text at full contrast. The browser
+   embed (.findings-pdf) is only the fallback when rasterizing is unavailable. */
+.pdf-pages { display: flex; flex-direction: column; align-items: center; gap: var(--s3); margin-top: var(--s4); }
+.pdf-page {
+  display: block; width: 100%; height: auto; max-width: 840px;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
 }
-.cm-wrap + .hbar-list { margin-top: var(--s4); }
-.hbar-list + .source-note { margin-top: var(--s3); }
-.source-note { font-size: .74rem; color: var(--text-3); }
-.source-note code { font-size: .72rem; }
 
-/* Horizontal bar rows -- used for baseline comparisons and per-class F1.
-   Same anatomy as .accbar (track/fill/label/value) but standalone. */
-.hbar-list { display: flex; flex-direction: column; gap: var(--s3); }
-.hbar-row__head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  font-size: .8rem; margin-bottom: 4px;
+.findings-pdf {
+  display: block; width: 100%; height: calc(100vh - 160px); min-height: 500px;
+  margin-top: var(--s4); border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--card);
 }
-.hbar-row__name { color: var(--text-2); }
-.hbar-row__name.is-subject { color: var(--text); font-weight: 600; }
-.hbar-row__val { font-family: var(--mono); font-size: .76rem; color: var(--text-3); }
-.hbar-row.is-subject .hbar-row__val { color: var(--text); font-weight: 600; }
-.hbar__track { height: 8px; border-radius: var(--r-pill); background: var(--line); overflow: hidden; }
-.hbar__fill { height: 100%; border-radius: var(--r-pill); background: var(--n5); }
-.hbar-row.is-subject .hbar__fill { background: var(--n8); }
-
-/* Confusion matrix heatmap: sequential neutral ink, diagonal called out
-   with a ring rather than a second colour -- no hue anywhere in the grid. */
-.cm-wrap { overflow-x: auto; }
-.cm-grid { border-collapse: separate; border-spacing: 2px; font-size: .78rem; }
-/* Column headers get a fixed width matching the data cells, so a long label
-   like "distressed" doesn't stretch its column wider than "neutral"'s --
-   without this the grid reads as a ragged table, not a uniform heatmap. */
-.cm-grid tr th:not(:first-child) {
-  width: 74px; font-weight: 500; color: var(--text-3); padding: 4px 4px;
-  text-align: center; white-space: nowrap;
-}
-.cm-grid th.cm-corner { color: var(--text-3); width: auto; }
-.cm-grid td {
-  width: 74px; height: 34px; text-align: center; vertical-align: middle;
-  font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--text);
-  border-radius: var(--r-sm);
-}
-.cm-grid td.cm-diag { box-shadow: inset 0 0 0 1.5px var(--text-3); font-weight: 600; }
-.cm-axis-label { font-size: .72rem; color: var(--text-3); text-align: center; padding-top: var(--s2); }
-
-.callout-list { display: flex; flex-direction: column; gap: var(--s3); }
-.callout-list li { list-style: none; padding-left: var(--s4); position: relative; font-size: .86rem; color: var(--text-2); }
-.callout-list li::before { content: "\2013"; position: absolute; left: 0; color: var(--text-3); }
-.callout-list b { color: var(--text); font-weight: 600; }
-
-/* Plain note: a rule, not a coloured block -- for asides that would
-   otherwise reach for .alert's tinted background. */
-.note {
-  border-left: 2px solid var(--line-2); padding-left: var(--s4);
-  color: var(--text-2); font-size: .86rem;
-}
-.note b { color: var(--text); font-weight: 600; }
-
-/* Plain summary tables (findings page) -- table.results above is a
-   purpose-built sticky-header grid for the job page, not reusable here. */
-.simple-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-.simple-table th {
-  text-align: left; font-weight: 600; color: var(--text-3); font-size: .68rem;
-  text-transform: uppercase; letter-spacing: .06em;
-  padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line-2);
-}
-.simple-table td {
-  padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line);
-  font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--text);
-}
-.simple-table tbody tr:last-child td { border-bottom: 0; }
-.simple-table th:first-child, .simple-table td:first-child {
-  font-family: var(--font); padding-left: var(--s4);
-}
-.simple-table th:last-child, .simple-table td:last-child { padding-right: var(--s4); }
-.simple-table th:not(:first-child), .simple-table td:not(:first-child) { text-align: right; }
 
 @media (max-width: 720px) {
   html { font-size: 15px; }

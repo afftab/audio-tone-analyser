@@ -13,16 +13,15 @@ wheels/
 .env
 
 # Uploaded call audio and model caches. Production-call audio is confidential
-# (brief §5) and must never enter the repository, which is force-pushed to a
-# public Hugging Face Space by .github/workflows/sync-to-hub.yml.
+# (brief §5) and must never enter the repository.
 data/cache/
 
 # Validation run artifacts. These embed verbatim IEMOCAP reference
 # transcripts (`ref_transcript` per sample) and full sweep logs. IEMOCAP is
 # distributed under a restrictive USC licence that does not permit
-# redistribution, so publishing these to a public Space would be a licence
-# breach as well as noise. The numbers that matter are quoted in
-# TECHNICAL_MEMO.md; the raw runs stay local.
+# redistribution, so publishing these would be a licence breach as well as
+# noise. The numbers that matter are quoted in TECHNICAL_MEMO.md and
+# docs/findings.pdf; the raw runs stay local.
 validation_results*.json
 iter_*.json
 predictions*.json
@@ -30,3 +29,15 @@ stage_timings.json
 *.log
 ablation_context/
 ablation_override/
+
+# Rasterized /findings page images, rebuilt on demand from docs/findings.pdf.
+.run/findings_pages/
+
+# LaTeX build artifacts for docs/findings.tex -- findings.pdf itself is
+# tracked (the app serves it directly), these intermediates are not.
+docs/*.aux
+docs/*.out
+docs/*.fls
+docs/*.fdb_latexmk
+docs/*.synctex.gz
+docs/missfont.log

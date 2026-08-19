@@ -1,15 +1,18 @@
 """FastAPI dashboard: login, batch upload, progress, results, export (brief §7)."""
 
 import hashlib
+import re
 import secrets
 import shutil
+import subprocess
 import tempfile
 import threading
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import (
+    FileResponse,
     HTMLResponse,
     JSONResponse,
     PlainTextResponse,
@@ -36,6 +39,11 @@ from vta.jobs import (
 )
 
 BASE_DIR = Path(__file__).resolve().parent
+FINDINGS_PDF = BASE_DIR.parent / "docs" / "findings.pdf"
+FINDINGS_PAGES_DIR = BASE_DIR.parent / ".run" / "findings_pages"
+_PDFTOPPM = shutil.which("pdftoppm") or (
+    "/opt/homebrew/bin/pdftoppm" if Path("/opt/homebrew/bin/pdftoppm").exists() else None
+)
 
 # Fail fast rather than serve with forgeable session cookies.
 require_production_secrets()
@@ -65,7 +73,31 @@ def _static_version(rel_path: str) -> str:
         return "0"
 
 
+# Bump when page-image RENDERING changes (DPI, pipeline), not just the PDF:
+# the preview URLs are content-addressed with this string, and the edge
+# caches PNGs -- an unchanged URL would keep serving stale renders.
+_FINDINGS_RENDER_REV = "black"
+
+
+def _findings_render_version() -> str:
+    return f"{_findings_pdf_version()}-{_FINDINGS_RENDER_REV}"
+
+
+def _findings_pdf_version() -> str:
+    """Same idea as _static_version, for docs/findings.pdf. A content-hashed
+    query string makes every regenerated report a distinct URL, so no cache
+    anywhere in the path (browser, or an edge cache in front of the public
+    tunnel) can serve a stale copy -- belt-and-suspenders alongside the
+    no-store header on the route itself."""
+    try:
+        return hashlib.sha256(FINDINGS_PDF.read_bytes()).hexdigest()[:10]
+    except OSError:
+        return "0"
+
+
 templates.env.globals["static_version"] = _static_version
+templates.env.globals["findings_pdf_version"] = _findings_pdf_version
+templates.env.globals["findings_render_version"] = _findings_render_version
 
 
 # Coarse per-IP brute-force limiter. In-process only: resets on restart,
@@ -153,11 +185,113 @@ def index(request: Request):
     return templates.TemplateResponse(request, "index.html", {})
 
 
+_PAGES_LOCK = threading.Lock()
+
+
+def _render_findings_pages() -> list[str] | None:
+    """Rasterize docs/findings.pdf into PNG pages for the /findings preview.
+
+    Plain <img> pages instead of an embedded PDF viewer: no viewer chrome,
+    no thumbnail sidebar, and the text renders at full contrast. Returns the
+    page filenames (sorted), or None when pdftoppm is unavailable -- the
+    template then falls back to the browser's PDF viewer.
+
+    Pages live in a directory named by the PDF's content hash, are rendered
+    at 200 DPI (a 840 CSS-px column gets 1:1 device pixels on 2x screens and
+    a clean 2x downscale otherwise -- lower DPIs wash the strokes out when
+    the browser downsamples non-integrally), and are written under a lock
+    into a temp dir that atomically replaces the old version, so a
+    concurrent request can never observe a half-rendered or deleted page.
+    """
+    if not _PDFTOPPM:
+        return None
+    # The cache directory is keyed by the FULL render version (pdf hash +
+    # render rev), so a change to DPI or post-processing re-renders instead
+    # of reusing files that the URL rev bump would then misrepresent.
+    version = _findings_render_version()
+    out = FINDINGS_PAGES_DIR / version
+    with _PAGES_LOCK:
+        pages = _page_names(out)
+        if pages:
+            return pages
+        tmp = FINDINGS_PAGES_DIR / f".tmp-{version}"
+        if tmp.exists():
+            shutil.rmtree(tmp)
+        tmp.mkdir(parents=True)
+        subprocess.run(
+            [_PDFTOPPM, "-png", "-r", "200", str(FINDINGS_PDF), str(tmp / "page")],
+            check=True,
+            capture_output=True,
+        )
+        if not _page_names(tmp):
+            raise RuntimeError("pdftoppm produced no pages")
+        tmp.rename(out)  # atomic: readers see either the old or the new set
+        for stale in FINDINGS_PAGES_DIR.iterdir():
+            if stale.name.startswith(".tmp-") or (
+                stale.is_dir() and stale.name != version
+            ):
+                shutil.rmtree(stale, ignore_errors=True)
+        return _page_names(out)
+
+
+def _page_names(directory: Path) -> list[str]:
+    if not directory.exists():
+        return []
+    return sorted(
+        (p.name for p in directory.glob("page-*.png")),
+        key=lambda n: int(re.search(r"\d+", n).group()),
+    )
+
+
 @app.get("/findings", response_class=HTMLResponse)
 def findings(request: Request):
     if not _is_authed(request):
         return RedirectResponse("/login", status_code=303)
-    return templates.TemplateResponse(request, "findings.html", {})
+    # The report is typeset from docs/findings.tex (single source of truth).
+    # The preview shows the compiled pages as plain images; /findings.pdf
+    # serves the document itself for download. no-store: this page is the
+    # pointer to content-addressed image URLs -- a heuristically cached copy
+    # would keep referencing (and resurrecting) superseded renders.
+    return templates.TemplateResponse(
+        request,
+        "findings.html",
+        {"findings_pages": _render_findings_pages()},
+        headers={"Cache-Control": "no-store, must-revalidate"},
+    )
+
+
+@app.get("/findings/page/{name}")
+def findings_page_image(name: str, request: Request):
+    if not _is_authed(request):
+        return RedirectResponse("/login", status_code=303)
+    if not re.fullmatch(r"page-\d+\.png", name):
+        raise HTTPException(status_code=404)
+    path = FINDINGS_PAGES_DIR / _findings_render_version() / name
+    if not path.is_file():
+        raise HTTPException(status_code=404)
+    # The URL carries the render version (?v=), so the bytes at a given URL
+    # never change -- tell every cache (browser, Cloudflare edge) exactly
+    # that, instead of leaving heuristic caching to serve stale renders.
+    return FileResponse(
+        path,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
+
+@app.get("/findings.pdf")
+def findings_pdf(request: Request):
+    if not _is_authed(request):
+        return RedirectResponse("/login", status_code=303)
+    return FileResponse(
+        FINDINGS_PDF,
+        media_type="application/pdf",
+        filename="findings.pdf",
+        # This report gets regenerated as findings change; an edge cache
+        # (e.g. Cloudflare, sitting in front of the tunnel) serving a stale
+        # copy would silently show AutoAce outdated numbers.
+        headers={"Cache-Control": "no-store, must-revalidate"},
+    )
 
 
 @app.post("/upload")
