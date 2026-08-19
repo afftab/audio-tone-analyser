@@ -13,6 +13,11 @@
         <string>--port</string>
         <string>8001</string>
     </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
     <key>WorkingDirectory</key>
     <string>/Users/aftab/Documents/Software Engineer Assessment/voice-tone-analyzer</string>
     <key>StandardOutPath</key>

@@ -24,8 +24,27 @@ limitations.
 
 Served over a Cloudflare named Tunnel (stable DNS record on `afftab.me`,
 TLS terminated at Cloudflare's edge) from a host running the app locally on
-port 8001. See `.run/com.vta.app.plist` and `.run/com.vta.cloudflared.plist`
-for the LaunchAgent definitions that keep both processes running.
+port 8001.
+
+Both processes are started by hand and are **not supervised**, so a crash or a
+host reboot takes the dashboard down until it is restarted:
+
+```bash
+nohup .venv/bin/python3 .venv/bin/uvicorn app.main:app \
+  --host 127.0.0.1 --port 8001 >> .run/app.log 2>&1 &
+nohup /opt/homebrew/bin/cloudflared tunnel run vta >> .run/cloudflared.log 2>&1 &
+```
+
+`.run/com.vta.app.plist` and `.run/com.vta.cloudflared.plist` are LaunchAgent
+definitions meant to supervise both (`KeepAlive`), but launchd refuses to run
+them on this host: 20 spawn attempts, `last exit code = 78` (`EX_CONFIG`), and
+nothing reaches the log, while the identical command runs fine from a shell.
+The likely cause is that the checkout lives under `~/Documents`, which macOS
+protects by TCC -- a Terminal session has access, a launchd agent does not --
+but no denial was recorded, so that is unconfirmed. Moving the checkout out of
+`~/Documents` is the fix worth trying. Note `python3` must invoke the uvicorn
+script explicitly: the venv path contains spaces, so exec'ing
+`.venv/bin/uvicorn` directly is fragile.
 
 ## Architecture
 
